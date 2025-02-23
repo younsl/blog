@@ -4,7 +4,7 @@ run-name: 📦 Release void theme ${{ github.event.inputs.release_version }}
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '[0-9].[0-9].[0-9]'
 
 permissions:
   contents: write
