@@ -22,3 +22,54 @@ params:
       # you can set show_more_url as "/blog"
       show_more_url: "/blog"
 ```
+
+### Appearance
+
+This theme supports three types of appearance: **dark mode**, **light mode**, and **auto**.
+
+If you want to toggle **dark mode**, you need to set the following configuration in your `hugo.yaml` file.
+
+```yaml
+# <YOUR_HUGO_REPOSITORY>/hugo.yaml
+params:
+  theme_config:
+    appearance: dark
+```
+
+If you want to toggle **light mode**, you need to set the following configuration in your `hugo.yaml` file.
+
+```yaml
+# <YOUR_HUGO_REPOSITORY>/hugo.yaml
+params:
+  theme_config:
+    appearance: light
+```
+
+If you want to  automatically by user preference, you need to set the following configuration in your `hugo.yaml` file.
+
+```yaml
+# <YOUR_HUGO_REPOSITORY>/hugo.yaml
+params:
+  theme_config:
+    appearance: auto
+```
+
+### Toggle footer
+
+If you want to toggle footer appearance, you need to set the following configuration in your `hugo.yaml` file.
+
+```yaml
+# <YOUR_HUGO_REPOSITORY>/hugo.yaml
+params:
+  theme_config:
+    isShowFooter: false
+```
+
+If you want to show footer, you need to set the following configuration in your `hugo.yaml` file.
+
+```yaml
+# <YOUR_HUGO_REPOSITORY>/hugo.yaml
+params:
+  theme_config:
+    isShowFooter: true
+```
