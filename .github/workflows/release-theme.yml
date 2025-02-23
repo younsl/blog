@@ -1,10 +1,10 @@
-name: Release Theme
+name: Release void theme
 
 on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: 'Release version (X.Y.Z)'
+        description: 'Semantic version of the theme (i.e. 1.1.2)'
         required: true
         type: string
         default: 'x.y.z'
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,20 +23,40 @@ jobs:
       - name: Compress theme files
         id: compress
         run: |
-          zip -r theme.zip \
+          zip -r void-theme-${{ github.event.inputs.release_version }}.zip \
             assets/ \
-            _layouts/ \
-            LICENSE \
-            README.md
+            layouts/ \
+            .github/docs/
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.2.1
         id: release
         with:
-          files: theme.zip
+          files: void-theme-${{ github.event.inputs.release_version }}.zip
           tag_name: ${{ github.event.inputs.release_version }}
           name: Void theme ${{ github.event.inputs.release_version }}
+          body: |
+            ## Summary
+
+            Void theme ${{ github.event.inputs.release_version }} has been released.
+            
+            ## Assets
+
+            void-theme-${{ github.event.inputs.release_version }}.zip file is a zip archive of the following files:
+
+            ```bash
+            void-theme-${{ github.event.inputs.release_version }}/
+            ├── assets/
+            ├── layouts/
+            └── .github/docs/
+            ```
+            
+            ## Notes
+
+            - This theme is compatible with Hugo Static Site Generator.
+            - Please refer to [docs](https://github.com/younsl/younsl.github.io/tree/main/.github/docs) for installation and usage.
+
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
