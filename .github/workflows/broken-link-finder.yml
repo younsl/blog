@@ -11,7 +11,7 @@ on:
 
 jobs:
   deadfinder:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Run DeadFinder
       uses: hahwul/deadfinder@1.6.1
