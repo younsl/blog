@@ -6,7 +6,9 @@ This document describes the demo of the `void` theme.
 
 ## Demo site
 
-You can visit the demo site [younsl.github.io](https://younsl.github.io) to see the `void` theme in action.
+If you want to see demo site, please visit the following link.
+
+- [https://younsl.github.io](https://younsl.github.io)
 
 ## Screenshots
 
