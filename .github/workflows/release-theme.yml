@@ -4,7 +4,7 @@ run-name: 📦 Release void theme ${{ github.event.inputs.release_version }}
 on:
   push:
     tags:
-      - '*.*.*'
+      - 'void/[0-9].[0-9].[0-9]'
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
       - name: Pin version
         id: version
         run: |
-          RELEASE_VERSION=${GITHUB_REF#refs/tags/v}
+          RELEASE_VERSION=${GITHUB_REF#refs/tags/void/}
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
 
       - name: Compress theme files
