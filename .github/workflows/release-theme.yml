@@ -3,7 +3,7 @@ name: Release Theme
 on:
   workflow_dispatch:
     inputs:
-        release_version:
+      release_version:
         description: 'Release version (X.Y.Z)'
         required: true
         type: string
