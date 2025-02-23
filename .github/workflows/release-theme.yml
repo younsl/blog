@@ -1,0 +1,42 @@
+name: Release Theme
+
+on:
+  workflow_dispatch:
+    inputs:
+        release_version:
+        description: 'Release version (X.Y.Z)'
+        required: true
+        type: string
+        default: 'x.y.z'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        id: checkout
+
+      - name: Compress theme files
+        id: compress
+        run: |
+          zip -r theme.zip \
+            assets/ \
+            _layouts/ \
+            LICENSE \
+            README.md
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        id: release
+        with:
+          files: theme.zip
+          tag_name: ${{ github.event.inputs.release_version }}
+          name: Void theme ${{ github.event.inputs.release_version }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
