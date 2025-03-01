@@ -32,7 +32,6 @@ jobs:
         run: |
           cd themes && \
           zip -r "../void-${{ env.RELEASE_VERSION }}.zip" void
-          ls -al
       
       - name: Release
         uses: softprops/action-gh-release@v2.2.1
