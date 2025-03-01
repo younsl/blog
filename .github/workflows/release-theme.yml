@@ -38,7 +38,7 @@ jobs:
         uses: softprops/action-gh-release@v2.2.1
         id: release
         with:
-          files: void-theme-${{ env.RELEASE_VERSION }}.zip
+          files: void-${{ env.RELEASE_VERSION }}.zip
           tag_name: ${{ github.ref }}
           name: Void theme ${{ env.RELEASE_VERSION }}
           body: |
@@ -49,10 +49,10 @@ jobs:
             
             ## Directory Structure
 
-            `void-theme-${{ env.RELEASE_VERSION }}.zip` file is a zip archive of the following files:
+            `void-${{ env.RELEASE_VERSION }}.zip` file is a zip archive of the following files:
             
             ```bash
-            void-theme-${{ env.RELEASE_VERSION }}/
+            void-${{ env.RELEASE_VERSION }}/
             └── void/
                 ├── assets/   # Assets for void theme (e.g. css, js, and etc.)
                 ├── layouts/  # Layouts for void theme (e.g. _default, partials, shortcodes, and etc.)
