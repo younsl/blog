@@ -31,8 +31,10 @@ jobs:
         id: compress
         run: |
           cd themes/
-          zip -r void-${{ env.RELEASE_VERSION }}.zip \
-            void/
+          zip -r "void-${{ env.RELEASE_VERSION }}.zip" \
+            -x "theme/void" \
+            --junk-paths \
+            theme/void
       
       - name: Release
         uses: softprops/action-gh-release@v2.2.1
