@@ -30,7 +30,6 @@ jobs:
       - name: Compress theme files
         id: compress
         run: |
-          cd themes/
           zip -r "void-${{ env.RELEASE_VERSION }}.zip" \
             -x "theme/void" \
             --junk-paths \
