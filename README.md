@@ -9,4 +9,4 @@
 This blog is styled with [void][void-docs] theme created by myself. If you want to know more about the theme, Feel free to read the [void][void-docs] docs.
 
 [hugo]: https://gohugo.io/
-[void-docs]: ./theme/void/docs/README.md
+[void-docs]: ./themes/void/docs/README.md
