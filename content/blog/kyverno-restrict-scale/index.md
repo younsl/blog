@@ -196,6 +196,118 @@ restrict-scale:
 
 &nbsp;
 
+### 강화된 정책
+
+주의할 점은 Scale 서브리소스를 사용하는 대신 `spec.replicas` 필드를 이용해 StatefulSet 리소스의 파드 개수를 수정하면 정책 위반 검증이 제대로 동작하지 않습니다.
+
+따라서 이러한 허점까지 고려해 아래와 같이 두 가지 방식을 모두 검증하는 정책을 작성해야 합니다.
+
+```yaml
+# Reference: https://kyverno.io/policies/other/restrict-scale/restrict-scale/
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-scale
+  annotations:
+    kyverno.io/kyverno-version: 1.13.1
+    younsl.github.io/battle-tested: "true"
+    younsl.github.io/battle-tested-since: "2025-02-28T00:00:00+09:00"
+spec:
+  admission: true
+  background: false
+  emitWarning: false
+  failurePolicy: Fail
+  # validationFailureActions will be deprecated in the future.
+  # Please use failureAction instead.
+  validationFailureAction: Enforce
+  rules:
+    - name: create-max-one
+      match:
+        any:
+          - resources:
+              kinds:
+                - StatefulSet/scale
+                - StatefulSet
+              names:
+                - "logstash"
+      skipBackgroundRequests: true
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: "The replica count for this StatefulSet may not exceed 1."
+        pattern:
+          spec:
+            replicas: "<2"
+```
+
+위 Validate 정책은 아래 두가지 방식을 모두 검증합니다.
+
+1. `kubectl scale` 명령어를 이용해 Scale 서브리소스를 수정하는 경우
+2. `kubectl edit` 명령어를 이용해 StatefulSet 리소스의 `spec.replicas` 필드를 수정하는 경우
+
+&nbsp;
+
+Deployment 리소스에 대해서도 동일한 정책을 적용할 수 있습니다.
+
+```yaml
+# Reference: https://kyverno.io/policies/other/restrict-scale/restrict-scale/
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-scale
+  annotations:
+    kyverno.io/kyverno-version: 1.13.1
+    younsl.github.io/battle-tested: "true"
+    younsl.github.io/battle-tested-since: "2025-02-28T00:00:00+09:00"
+spec:
+  admission: true
+  background: false
+  emitWarning: false
+  failurePolicy: Fail
+  # validationFailureActions will be deprecated in the future.
+  # Please use failureAction instead.
+  validationFailureAction: Enforce
+  rules:
+    - name: create-max-one
+      match:
+        any:
+          - resources:
+              kinds:
+                - StatefulSet/scale
+                - StatefulSet
+              names:
+                - "logstash"
+      skipBackgroundRequests: true
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: "The replica count for this StatefulSet may not exceed 1."
+        pattern:
+          spec:
+            replicas: "<2"
+    - name: create-max-twenty
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment/scale
+                - Deployment
+              names:
+                - "example-distributed-job-pod-*"
+      skipBackgroundRequests: true
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: "The replica count for this Deployment may not exceed 20."
+        pattern:
+          spec:
+            replicas: "<21"
+```
+
+&nbsp;
+
 ## 관련자료
 
 - [Kyverno 공식문서](https://kyverno.io/docs/)
