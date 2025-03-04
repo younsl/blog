@@ -243,6 +243,8 @@ spec:
 
 위 Validate 정책은 아래 두가지 방식을 모두 검증합니다.
 
+![Enhanced Policy](./4.png)
+
 1. `kubectl scale` 명령어를 이용해 Scale 서브리소스를 수정하는 경우
 2. `kubectl edit` 명령어를 이용해 StatefulSet 리소스의 `spec.replicas` 필드를 수정하는 경우
 
