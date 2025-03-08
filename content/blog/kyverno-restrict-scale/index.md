@@ -78,9 +78,13 @@ Kyverno는 Validate, Mutate, Generate, Verify Images 등 [다양한 정책 타�
 
 &nbsp;
 
-다음 명령어로 Validate 정책을 적용합니다.
+이 시나리오에서는 YAML 파일을 이용해 정책을 적용합니다. 하지만 실제 기업(엔터프라이즈) 환경에서는 Kyverno 정책들을 모아놓은 [kyverno-policies](https://github.com/kyverno/kyverno/tree/main/charts/kyverno-policies) 헬름 차트를 이용해 모든 정책을 차트 기반으로 관리하는 것을 권장합니다.
 
-> 이 시나리오에서는 YAML 파일을 이용해 정책을 적용합니다. 하지만 실제 기업(엔터프라이즈) 환경에서는 Kyverno 정책들을 모아놓은 [kyverno-policies](https://github.com/kyverno/kyverno/tree/main/charts/kyverno-policies) 헬름 차트를 이용해 모든 정책을 차트 기반으로 관리하는 것을 권장합니다.
+![Helm charts for kyverno](./4.png)
+
+&nbsp;
+
+다음 명령어로 Validate 정책을 생성합니다.
 
 ```bash {hl_lines="26"}
 cat << EOF | kubectl apply -f -
@@ -243,7 +247,7 @@ spec:
 
 위 Validate 정책은 아래 두가지 방식을 모두 검증합니다.
 
-![Enhanced Policy](./4.png)
+![Enhanced Policy](./5.png)
 
 1. `kubectl scale` 명령어를 이용해 Scale 서브리소스를 수정하는 경우
 2. `kubectl edit` 명령어를 이용해 StatefulSet 리소스의 `spec.replicas` 필드를 수정하는 경우
