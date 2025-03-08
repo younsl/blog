@@ -3,8 +3,10 @@
 
 <article>
     <p class="post-meta">
-        <time datetime="{{ .Date }}">
-            {{ .Date | time.Format site.Params.theme_config.date_format }}
+        {{- $dateFormat := site.Params.theme_config.date_format -}}
+        {{- $displayDate := cond .Lastmod .Lastmod .Date -}}
+        <time datetime="{{ $displayDate }}">
+            {{- $displayDate | time.Format $dateFormat -}}
         </time>
     </p>
 
@@ -16,18 +18,17 @@
         </aside>
     {{ end }}
 
-    <!-- [Partial] Google Adsense -->
-    {{ if .Params.showAdvertisement | default (.Site.Params.article.showAdvertisement | default true) }}
-        {{ if templates.Exists "partials/adsense.html" }}
-            {{- partial "adsense.html" . -}}
-            {{- .Content -}}
-            {{- partial "adsense.html" . -}}
-        {{ else }}
-            {{ warnf "[ETCH] Adsense is enabled for %s but no google adsense partial exists." .File.Path }}
-        {{ end }}
-    {{ else }}
-        <!-- Main content per post -->
+    {{- $showAds := .Params.showAdvertisement | default (.Site.Params.article.showAdvertisement | default true) -}}
+    {{- $adsensePartialExists := templates.Exists "partials/adsense.html" -}}
+    {{- if and $showAds $adsensePartialExists -}}
+        {{- partial "adsense.html" . -}}
         {{- .Content -}}
-    {{ end }}
+        {{- partial "adsense.html" . -}}
+    {{- else -}}
+        {{- if $showAds -}}
+            {{- warnf "[VOID] Adsense is enabled for %s but no google adsense partial exists." .File.Path -}}
+        {{- end -}}
+        {{- .Content -}}
+    {{- end -}}
 </article>
 {{ end }}
