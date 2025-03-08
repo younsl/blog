@@ -22,7 +22,7 @@ Kyverno 운영 가이드입니다.
 
 [Kyverno](https://github.com/kyverno/kyverno)는 Kubernetes용으로 설계된 정책 엔진입니다.
 
-Kyverno의 정책은 ClusterPolicy라고 하는 Kubernetes 리소스(CRD)로 관리됩니다. Kyverno는 [OPA](https://github.com/open-policy-agent/opa)와 달리 정책을 작성하는 데 새로운 프로그래밍 언어가 필요하지 않습니다.
+Kyverno의 정책은 ClusterPolicy라고 하는 Kubernetes 리소스(CRD)로 관리됩니다. Kyverno는 [OPA](https://github.com/open-policy-agent/opa)에서 사용하는 Rego 언어를 사용하지 않고, 쿠버네티스 네이티브 언어인 YAML로 정책을 작성하므로 새로운 언어 학습이 필요 없다는 장점이 있습니다.
 
 &nbsp;
 
@@ -170,13 +170,17 @@ reportsController.replicas: 2
 
 #### 필요 helm chart
 
-Kyverno를 운영하려면 2개의 helm chart 설치가 필요합니다.
+Kyverno를 운영하려면 2개의 helm chart 설치가 필요합니다. 일반적으로 쿠버네티스는 모든 리소스를 헬름 차트로 관리하는 것이 모범사례이기 때문에 정책 리소스 또한 kyverno-policies 차트로 관리하는 것이 좋습니다.
+
+아래는 Kyverno 관련 헬름 차트 목록입니다.
 
 - **kyverno** : (Required) Kyverno 정책 엔진 helm chart. kyverno 정책 엔진 관련 리소스는 모두 전용 네임스페이스인 `kyverno`에 위치하게 됩니다.
-- **kyverno-policies** : (Required) ClusterPolicy를 모아놓은 helm chart
+- **kyverno-policies** : (Required) Kyverno가 사용하는 정책 리소스 전용 차트.
 - **policy-reporter** : (Optional) 클러스터 정책 현황을 시각화해주는 Web UI 컴포넌트입니다. 조직의 요구사항에 따라 설치하면 되며, `policy-reporter` 대신 Prometheus + Grafana 연동으로 대체할 수 있습니다.
 
-Kyverno는 [설치 방식](https://kyverno.io/docs/installation/methods/)<sup>Installation method</sup>으로 [오퍼레이터 패턴](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/)을 지원하지 않으며, 헬름 차트와 YAML 직접 설치 방식만 지원하고 있습니다.
+![kyverno와 kyverno-policies 차트 구성](./4.png)
+
+Kyverno는 [설치 방식](https://kyverno.io/docs/installation/methods/)으로 [Kubernetes Operator](https://kubernetes.io/ko/docs/concepts/extend-kubernetes/operator/) 패턴을 지원하지 않으며, 헬름 차트와 YAML 직접 설치 방식만 지원하고 있습니다.
 
 &nbsp;
 
@@ -210,7 +214,7 @@ charts
 
 헬름 차트 설치 과정을 그림으로 표현하면 다음과 같습니다.
 
-![helm 차트 설치 과정](./4.png)
+![helm 차트 설치 과정](./5.png)
 
 &nbsp;
 
@@ -546,9 +550,9 @@ helm install \
 
 &nbsp;
 
-사내망에서만 접근 가능한 Policy Reporter를 아래와 같이 구성할 수 있습니다.
+사내망에서만 접근 가능한 Policy Reporter를 아래와 같이 구성할 수 있습니다. 클러스터 바깥의 사용자가 접근하기 때문에 NodePort로 서비스를 노출하거나, (nginx-ingress와 같은 컨트롤러를 사용하는 경우) Ingress를 통해 외부에서 접근할 수 있도록 구성합니다.
 
-![Policy Reporter 구성 예시](./5.png)
+![Policy Reporter 구성 예시](./6.png)
 
 Policy Reporter 헬름 차트의 [Ingress](https://github.com/kyverno/policy-reporter/blob/main/charts/policy-reporter/values.yaml#L103)를 활성화해서 Internal 타입의 ALB를 만들었습니다.
 
@@ -638,7 +642,7 @@ reportsController:
 
 Prometheus와 Kyverno가 다른 클러스터에 위치한 경우 다음과 같은 아키텍처로 메트릭을 수집하게 됩니다.
 
-![외부 노출을 위한 NodePort 구성](./6.png)
+![외부 노출을 위한 NodePort 구성](./7.png)
 
 &nbsp;
 
@@ -646,7 +650,7 @@ Prometheus와 Kyverno가 다른 클러스터에 위치한 경우 다음과 같�
 
 만약 Prometheus Operator를 설치해서 사용하고 있을 경우 아래와 같이 service monitor 리소스를 생성해서 메트릭을 수집할 수 있습니다.
 
-![serviceMonitor 구조](./7.png)
+![serviceMonitor 구조](./8.png)
 
 현재 클러스터에서 serviceMonitor 리소스를 사용할 수 있는지 확인하기 위해 먼저 API Resource 목록을 조회합니다.
 
