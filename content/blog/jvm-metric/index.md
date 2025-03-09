@@ -10,9 +10,13 @@ tags: ["kubernetes", "prometheus", "spring"]
 
 ## 개요
 
-Spring Actuator 의 Prometheus 엔드포인트를 통해 JVM 메트릭을 수집하는 방법을 정리합니다.
+이 문서는 쿠버네티스 환경에서 Spring Boot 애플리케이션의 JVM 메트릭을 효과적으로 수집하고 모니터링하는 방법을 다룹니다. 주 대상 독자는 DevOps 엔지니어, SRE(Site Reliability Engineer), 그리고 Kubernetes에서 Java 기반 애플리케이션을 운영하는 개발자입니다.
 
-관측가능성 확보를 담당하는 DevOps Engineer 또는 SRE 엔지니어를 위한 가이드입니다.
+Java 애플리케이션에서는 Micrometer를 활용하여 Prometheus 형식의 메트릭을 노출할 수 있으며, 이를 기반으로 Prometheus와 Grafana를 사용해 모니터링할 수 있습니다. Micrometer는 JVM 기반 애플리케이션에서 성능 및 상태 정보를 수집하는 라이브러리로, 다양한 모니터링 시스템(Prometheus, CloudWatch, Datadog 등)과 통합할 수 있습니다. Spring Boot 2.x 이상에서는 기본적으로 Micrometer를 지원하며, spring-boot-starter-actuator를 통해 손쉽게 메트릭을 노출할 수 있습니다. 이를 통해 JVM 메모리 사용량, Heap 사용량, GC(가비지 컬렉션) 횟수, 스레드 상태, HTTP 요청 수, 웹소켓 커넥션 수 등의 주요 애플리케이션 성능 지표를 실시간으로 모니터링하고, 장애 발생 시 빠르게 원인을 파악할 수 있는 환경을 구축할 수 있습니다.
+
+![Overview architecture](./1.png)
+
+이 문서에서는 Micrometer 설정, Prometheus 서버에서의 메트릭 수집(scrape) 설정, Grafana를 활용한 시각화까지 단계별로 설명합니다. 또한, 쿠버네티스 환경에서 Annotation을 활용하여 자동으로 메트릭을 수집하도록 설정하는 방법도 포함합니다.
 
 &nbsp;
 
@@ -171,7 +175,7 @@ kubectl exec -it prometheus-server-79f7d4d8d-mcb9f \
 
 프로메테우스 서버 파드가 대상 어플리케이션 파드의 JVM 메트릭을 수집(scrape)하는 과정은 다음과 같이 진행됩니다.
 
-![메트릭 수집 과정](./1.png)
+![메트릭 수집 과정](./2.png)
 
 &nbsp;
 
@@ -418,7 +422,7 @@ jvm_threads_live_threads 73.0
 
 Grafana에서 수집한 메트릭을 조합해 대시보드를 만든 예시:
 
-![JVM 메트릭 대시보드](./2.png)
+![JVM 메트릭 대시보드](./3.png)
 
 이를 통해 블랙박스 영역이었던 JVM 메트릭을 더 세부적으로 관측할 수 있습니다. 관측가능성은 손이 많이 가는 작업이지만 더 나은 품질의 서비스를 제공하는데 필요한 매우 중요한 작업입니다.
 

@@ -78,8 +78,8 @@ On-premise, Linux administration, VMware Cluster administration, Storage adminis
 
 ### PROJECTS
 
-- [Charts](/charts/): Battle-tested helm charts for Kubernetes.
-- [GSS](https://github.com/younsl/gss): Scanner for scheduled workflows in GitHub Enterprise Server. Built with Go.
+- **[Charts](/charts/)**: Battle-tested helm charts for Kubernetes.
+- **[GSS](https://github.com/younsl/gss)**: Scanner for scheduled workflows in GitHub Enterprise Server. Built with Go.
 
 &nbsp;
 
