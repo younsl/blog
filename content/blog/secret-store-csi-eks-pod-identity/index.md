@@ -22,9 +22,31 @@ Secrets Store CSI Driver는 AWS Secrets Manager에 저장된 시크릿을 Kubern
 
 Secrets Store CSI Driver는 쿠버네티스 시크릿을 외부 비밀 관리 시스템(AWS Secrets Manager, HashiCorp Vault 등)과 연동하여 자동으로 가져오고 Pod에서 사용할 수 있도록 하는 도구로, 모든 노드에 데몬셋으로 배포됩니다. Pod이 비밀 값을 요청하면, 드라이버가 외부 시스템에서 값을 가져와 파일 형태로 마운트하거나 쿠버네티스 시크릿으로 생성하며, 변경 사항이 있으면 자동으로 업데이트합니다.
 
+아래는 Secret Store CSI Driver 공식문서에 나오는 아키텍처 이미지입니다.
+
 ![Secrets Store CSI Driver 아키텍처](./1.png)
 
-아래 명령어를 실행하면 Secrets Store CSI Driver가 사용하는 커스텀 리소스(Custom Resource, CR) 를 확인할 수 있습니다.
+&nbsp;
+
+Secrets Store CSI Driver는 쿠버네티스의 표준 CSI(Container Storage Interface) 스펙을 구현한 범용 드라이버로, 외부 시크릿을 쿠버네티스 파드에 볼륨으로 마운트하는 기본 기능을 제공합니다. 하지만 이 드라이버 자체는 특정 클라우드 프로바이더나 시크릿 저장소와 직접 통신하지 않기 때문에, AWS Secrets Manager와 같은 특정 시크릿 서비스와 연동하기 위해서는 해당 서비스에 특화된 Provider가 필요합니다. AWS Provider는 AWS 인증, AWS API 호출, AWS Secrets Manager와의 통신 등 AWS 특화 기능을 구현하여 Secrets Store CSI Driver와 AWS Secrets Manager 사이의 다리 역할을 합니다. 따라서 AWS Secrets Manager의 시크릿을 쿠버네티스 파드에서 사용하기 위해서는 Secrets Store CSI Driver와 Secrets Store CSI Driver Provider AWS를 함께 설치해야 합니다.
+
+![Overview of helm chart](./2.png)
+
+&nbsp;
+
+Secrets Store CSI Driver는 크게 아래 순서로 작동합니다.
+
+![Secrets Store CSI Driver 아키텍처](./3.png)
+
+1. Application 파드 생성 → kube-apiserver (파드 생성 요청, CSI 볼륨 설정 + SecretProviderClass 설정 포함)
+2. kube-apiserver → kubelet (파드 생성 요청 전달)
+3. kubelet → secrets-store-csi-driver (Unix Domain Socket으로 통신)
+4. secrets-store-csi-driver → secrets-store-csi-driver-provider-aws (파일시스템 기반 통신)
+5. secrets-store-csi-driver-provider-aws → AWS Secrets Manager (AWS SDK 사용)
+
+&nbsp;
+
+kubectl 명령어를 통해 Secrets Store CSI Driver가 사용하는 커스텀 리소스(Custom Resource, CR)를 확인할 수 있습니다.
 
 ```bash
 kubectl api-resources --api-group secrets-store.csi.x-k8s.io
@@ -96,6 +118,8 @@ spec:
 
 ### EKS Pod Identity
 
+Secret Store CSI Driver Provider AWS는 [0.3.11](https://github.com/aws/secrets-store-csi-driver-provider-aws/releases/tag/secrets-store-csi-driver-provider-aws-0.3.11) 버전부터 EKS Pod Identity 방식을 지원합니다. 자세한 사항은 [PR #416](https://github.com/aws/secrets-store-csi-driver-provider-aws/pull/416) 이슈를 참고합니다.
+
 [EKS Pod Identity][eks-pod-identity]는 IRSA 방식을 대체하기 위해 2023년 11월에 출시된 파드 권한 획득 방식입니다. 기존 방식인 IRSA 방식에 비해 더 간결한 설정으로 파드 권한 획득을 지원하기 때문에 [EKS 모범사례][eks-best-practices]에서도 권장하는 방식입니다.
 
 Secrets Store CSI Driver Provider AWS가 EKS Pod Identity 방식을 사용해서 Secrets Manager에 저장된 시크릿을 가져오려면 `spec.parameters.usePodIdentity` 파라미터를 `true`로 설정해야 합니다.
@@ -127,7 +151,10 @@ AWS:
 
 Secrets Store CSI Driver:
 
-- [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/)
+- [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/): 공식 문서
+- [Secrets Store CSI Driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver): Github
+- [Secrets Store CSI Driver Provider AWS](https://github.com/aws/secrets-store-csi-driver-provider-aws): Github
+- [Add support for EKS Pod Identity #416](https://github.com/aws/secrets-store-csi-driver-provider-aws/pull/416)
 
 [eks-best-practices]: https://docs.aws.amazon.com/ko_kr/eks/latest/best-practices/identity-and-access-management.html#_identities_and_credentials_for_eks_pods
 [eks-pod-identity]: https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html
