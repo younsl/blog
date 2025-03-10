@@ -1,7 +1,7 @@
 ---
 title: "curated essentials"
 date: 2025-03-07T22:53:00+09:00
-lastmod: 2025-03-07T22:53:00+09:00
+lastmod: 2025-03-11T00:09:00+09:00
 slug: ""
 description: "Curated essentials for Site Reliability Engineers"
 keywords: []
@@ -24,6 +24,7 @@ weight: 10
 - [Kubernetes: The Documentary [Part 1]](https://youtu.be/BE77h7dmoQU?si=Z8SogwURaHyO2vSa)
 - [Kubernetes: The Documentary [Part 2]](https://youtu.be/318elIq37PE?si=9VvPqRjXrKk-bnhS)
 - [Prometheus: The Documentary](https://youtu.be/rT4fJNbfe14?si=IpI_WplBDiUpqDKK)
+- [Inside Argo: Automating the Future](https://youtu.be/ox3Gx3eCTCs?si=VJGSP1bgOADfg300)
 
 **Video:**
 
