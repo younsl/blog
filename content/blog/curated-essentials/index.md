@@ -11,7 +11,7 @@ weight: 10
 
 ## 개요
 
-사이트 신뢰성 엔지니어(Site Reliability Engineer)가 읽으면 좋은 학습 자료들을 큐레이팅했습니다.
+사이트 신뢰성 엔지니어(Site Reliability Engineer) 또는 데브옵스 엔지니어(DevOps Engineer)가 읽으면 좋은 학습 자료들을 큐레이팅했습니다.
 
 &nbsp;
 
@@ -48,6 +48,10 @@ weight: 10
 
 - [SRE Books](https://sre.google/books/)
 - [Command Line Interface Guidelines (Korean)](https://clig.kr/)
+
+**Podcast:**
+
+- [Kubernetes for Humans](https://podcasts.apple.com/us/podcast/kubernetes-for-humans/id1706941753?l=ko) 🏷️ kubernetes
 
 **Misc:**
 
