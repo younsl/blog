@@ -31,6 +31,13 @@ backupUtils:
   podAnnotations: {}
     # linkerd.io/inject: enabled
 
+  # -- dnsConfig
+  # DNS config for backup-utils pod
+  dnsConfig: {}
+    # options:
+    #   - name: ndots
+    #     value: "2"
+  
   # -- timeZone
   # Timezone for scheduled backups executed by cronjob
   # ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#time-zones

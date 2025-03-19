@@ -26,6 +26,10 @@ spec:
             {{- toYaml .podAnnotations | nindent 12 }}
           {{- end }}
         spec:
+          {{- if .dnsConfig }}
+          dnsConfig:
+            {{- toYaml .dnsConfig | nindent 12 }}
+          {{- end }}
           containers:
           - name: backup-utils
             image: {{ include "github-backup-utils.image" (merge (dict "Chart" $.Chart) .) }}
