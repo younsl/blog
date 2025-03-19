@@ -119,7 +119,14 @@ CloudFront를 S3 버킷 앞에 배치하면 버킷을 비공개로 보호할 수
 
 CloudFront에 캐싱이 비활성화된 경우에도 CloudFront가 S3에서 데이터를 가져오는 데 드는 비용은 없고, 사용자에게 전달되는 데이터 전송에 대해서만 비용이 발생하므로, 직접 S3에서 데이터를 가져오는 것보다 비용이 더 효율적일 수 있습니다.
 
-CloudFront 비용 모델은 [Amazon CloudFront pricing](https://aws.amazon.com/cloudfront/pricing/?nc1=h_ls)에서 확인할 수 있습니다. 참고로 월 최초 10TB까지는 서울이 전세계에서 가장 데이터 전송(DTO) 비용이 비쌉니다.
+CloudFront 비용 모델은 [Amazon CloudFront pricing](https://aws.amazon.com/cloudfront/pricing/?nc1=h_ls)에서 확인할 수 있습니다. 참고로 월 최초 10TB까지는 서울이 전세계에서 가장 데이터 전송(DTO) 비용이 비쌉니다. 이것마저도 [2021년 5월에 한국의 데이터 전송(DTO) 요금을 최대 26% 할인](https://aws.amazon.com/ko/blogs/korea/cloudfront-price-cut-data-transfer-out-to-internet-in-korea/)한 가격입니다.
+
+&nbsp;
+
+CloudFront 비용 모델에서 크게 2가지 포인트를 활용하면 비용 절감에 도움이 될 듯 합니다.
+
+- 월 첫 1TB 까지는 데이터 전송(DTO) 비용이 무료
+- CloudFront와 S3간 데이터 전송(DTO) 비용이 무료
 
 &nbsp;
 
@@ -135,4 +142,9 @@ CloudFront:
 
 - [관리형 캐시 정책 사용](https://docs.aws.amazon.com/ko_kr/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html)
 - [CloudFront 엣지 서버의 위치 및 IP 주소 범위](https://docs.aws.amazon.com/ko_kr/AmazonCloudFront/latest/DeveloperGuide/LocationsOfEdgeServers.html)
+
+CloudFront FinOps:
+
 - [Amazon CloudFront pricing](https://aws.amazon.com/cloudfront/pricing/?nc1=h_ls)
+- [Amazon CloudFront, 한국에서 최대 26% 데이터 전송 요금 할인](https://aws.amazon.com/ko/blogs/korea/cloudfront-price-cut-data-transfer-out-to-internet-in-korea/)
+- [Amazon CloudFront Pricing](https://aws.amazon.com/ko/cloudfront/pricing/?nc1=h_ls)
