@@ -21,7 +21,7 @@ EKS 환경에서 Ingress nginx controller의 IP ACL 기반 whitelist-source-rang
 - EKS v1.32
 - **Internal Network Load Balancer**: 앞단의 클라이언트와 뒤단의 파드 사이에 위치하는 네트워크 로드밸런서로 최초 트래픽 진입점
 - [AWS Load Balancer Controller 2.7.0](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.7/) (installed by helm chart)
-- **Ingress controller**: Ingress nginx controller 1.12.0 (installed by helm chart)
+- **Ingress controller**: [Ingress nginx controller](https://github.com/kubernetes/ingress-nginx) 1.12.0 (installed by helm chart)
 - No Service Mesh like Istio or Linkerd
 
 &nbsp;
