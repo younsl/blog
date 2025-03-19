@@ -271,6 +271,16 @@ options ndots:1
 
 대부분의 워크로드의 경우 ndots를 기본값 5가 아닌 2로 설정하면 충분하며, [Amazon EKS 모범사례](https://docs.aws.amazon.com/ko_kr/eks/latest/best-practices/scale-cluster-services.html)에도 권장하는 설정입니다.
 
+&nbsp;
+
+제 경우, 노드 7대에 파드 130여개 규모의 클러스터에서 ArgoCD의 ndots만 5에서 2로 설정한 후 전체 DNS 질의 요청량의 56%를 줄일 수 있었습니다.
+
+아래는 적용 이후 Grafana에서 확인한 CoreDNS 요청량 감소 현황입니다.
+
+![CoreDNS 전체 요청량이 56% 감소한 결과 by Grafana Dashboard](./5.png)
+
+&nbsp;
+
 대부분 외부 도메인(예: api.google.com, collector.newrelic.com)은 점(.)이 2개 이상 포함된 FQDN이므로, ndots=2로 설정하면 처음부터 FQDN으로 인식되어 클라이언트에서 불필요한 내부 search 도메인 질의를 피할 수 있습니다(search 도메인을 붙이지 않으므로). 이는 특히 외부 DNS 요청 시 성능을 향상시키고, 불필요한 DNS 실패로 인한 CoreDNS의 CPU 부하 및 I/O Timeout 문제를 줄이는 데 도움이 됩니다.
 
 아래 다이어그램은 CoreDNS가 애플리케이션 파드에서 질의하는 도메인에 따라 클러스터 내부 또는 외부로 질의하는 방식을 보여줍니다.
