@@ -38,6 +38,15 @@ runnerDeployments:
       - v2.311.0
       - build
 
+    # DNS configuration for the runner pod.
+    # This setting allows you to customize the DNS resolution behavior of the runner pod.
+    # By default, the runner pod will use the DNS configuration defined in the Kubernetes cluster.
+    # You can override this configuration by specifying a custom DNS configuration.
+    dnsConfig: {}
+      # options:
+      #   - name: ndots
+      #     value: "2"
+
     securityContext:
       fsGroup: 1001
     

@@ -44,6 +44,10 @@ spec:
       {{- if .autoscaling.enabled }}
         - support-horizontal-runner-autoscaling
       {{- end }}
+      {{- with .dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       dockerEnabled: {{ .dockerEnabled }}
       {{- with .dockerEnv }}
       dockerEnv:

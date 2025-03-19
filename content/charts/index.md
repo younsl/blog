@@ -37,7 +37,7 @@ The `index.yaml` file contains the metadata of the repository and is used for ch
 
 | Chart name | Status | Chart version |
 | ---------- | ------ | ------------- |
-| [**actions-runner**][actions-runner] | Active | 0.1.3 |
+| [**actions-runner**][actions-runner] | Active | 0.1.4 |
 | [**argocd-apps**][argocd-apps] | Active | 1.7.0 |
 | [**backup-utils**][backup-utils] | Active | 0.4.2 |
 | [**karpenter-nodepool**][karpenter-nodepool] | Active | 1.3.0 |
