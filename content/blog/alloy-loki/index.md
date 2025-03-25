@@ -26,10 +26,10 @@ Grafana Agent와 Promtail는 유지보수가 중단된 상태이므로 새로운
 
 ## 환경
 
-같은 클러스터(In-cluster)에서 노드 시스템 로그 및 파드 컨테이너 로그를 수집하고 Loki로 전송하는 방법을 설명합니다.
+같은 클러스터(In-cluster)에서 노드 시스템 로그 및 파드 컨테이너 로그를 수집하고 Loki로 전송하는 방법을 설명합니다. 
 
 - Kubernetes: EKS v1.32
-- **Loki 3.3.2** (helm 설치)
+- **Loki 3.4.2** (helm chart로 설치)
 - **Alloy 1.17.4**: [helm chart 0.12.5](https://github.com/grafana/alloy/releases/tag/helm-chart%2F0.12.5)로 설치
 
 이 가이드에서는 Alloy에 대한 설정 및 설치 방법을 설명하기 때문에 Loki 설치 방법은 설명하지 않습니다.
@@ -38,7 +38,17 @@ Grafana Agent와 Promtail는 유지보수가 중단된 상태이므로 새로운
 
 ## 설정하기
 
-Allow 헬름 차트 0.12.5를 로컬에 다운로드 받습니다.
+이 가이드에서는 쿠버네티스 클러스터 내부에서 Alloy가 데몬셋으로 실행되며, 데몬셋이 수집한 로그를 쿠버네티스 네이티브 로그 저장소인 Loki로 전송합니다.
+
+시스템 아키텍처로 간단하게 표현하면 아래와 같습니다.
+
+![Kubernetes 클러스터의 구성](./2.png)
+
+다시 한번 강조하지만, 이 가이드에서는 Loki 설치 방법을 설명하지 않습니다. 이 가이드에서는 이미 Loki가 설치되어 있다고 가정합니다.
+
+&nbsp;
+
+로그 수집기인 Alloy를 설치하기 위해 헬름 차트를 다운로드 받습니다.
 
 ```bash
 export CHART_VERSION=0.12.5
@@ -80,14 +90,14 @@ In-cluster에서 alloy daemonset이 loki로 로그를 전송하기 위해서는 
 
 &nbsp;
 
-헬름차트로 설치된 alloy의 설정은 configMap을 통해 관리됩니다.
+헬름차트로 설치된 alloy의 로그 수집 설정은 configMap을 통해 관리됩니다.
 
 이 시나리오에서는 Alloy가 크게 2가지 영역의 로그를 수집하고 Loki로 전송할 겁니다.
 
-![Alloy 설정 예시](./2.png)
+![Alloy 설정 예시](./3.png)
 
-- 워커 노드 시스템 로그
-- 파드 컨테이너 로그
+- 워커 노드(EC2)에 저장된 시스템 로그
+- 파드(컨테이너) 로그
 
 &nbsp;
 
@@ -438,13 +448,13 @@ kubectl port-forward -n alloy pod/alloy-ct4vr 12345
 open http://localhost:12345
 ```
 
-![Alloy UI 메인화면](./3.png)
+![Alloy UI 메인화면](./4.png)
 
 &nbsp;
 
 로그 수집이 정상적으로 되지 않을 경우, 아래와 같이 Alloy UI에 접속해서 설정 상태 및 로그의 라벨링 정보, 로그 데이터를 확인할 수 있습니다.
 
-![Alloy UI에서 확인한 로그 데이터](./4.png)
+![Alloy UI에서 확인한 로그 데이터](./5.png)
 
 &nbsp;
 
