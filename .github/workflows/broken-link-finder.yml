@@ -19,6 +19,7 @@ jobs:
       with:
         command: sitemap
         target: https://younsl.xyz/sitemap.xml
+        worker_headers: "User-Agent: Deadfinder Bot"
     
     - name: Output Handling
-      run: echo '${{ steps.broken-link.outputs.output }}'
+      run: echo ${{ steps.broken-link.outputs.output }}
