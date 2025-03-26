@@ -12,9 +12,18 @@ tags: ["devops", "kubernetes", "loki", "logging", "observability"]
 
 클러스터 내부의 로그 수집기로 잘 사용하고 있던 Promtail이 공식적으로 지원종료된 걸 우연히 [공식문서](https://grafana.com/docs/loki/latest/send-data/promtail/#promtail-agent)를 통해 확인하게 되었습니다.
 
+&nbsp;
+
 Grafana Agent와 Promtail는 유지보수가 중단된 상태이므로 새로운 로그 수집기인 Alloy로 전환(마이그레이션)을 빠른 시일내에 완료해야 합니다.
 
-이에 따라 Promtail 3.0.0을 Alloy 1.7.4로 전환하기로 결심했습니다. Alloy는 내부적으로 Promtail의 기능을 모두 포함하고 있으며, 더 나아가 컨테이너 로그 수집 외에도 노드 시스템 로그나 쿠버네티스 이벤트 및 여러 메트릭 수집 기능을 제공합니다. 자세한 사항은 [Grafana Alloy의 Overview](https://grafana.com/docs/alloy/latest/) 페이지를 참고합니다.
+Grafana Agent와 Promtail의 지원종료 일정은 아래와 같습니다.
+
+- **Grafana Agent**: 지원종료(Deprecated) 되었으며 2025년 10월 31일까지만 장기지원(Long Term Support)을 제공합니다. 2025년 11월 1일에는 End of Life(EOL)가 됩니다.
+- **Promtail**: 지원종료(Deprecated) 되었으며 2025년 2월 13일까지만 장기지원(Long Term Support)을 제공합니다.
+
+&nbsp;
+
+이에 따라 Promtail 3.0.0을 Alloy 1.7.4로 전환하기로 결심했습니다. Alloy는 내부적으로 Promtail의 기능을 모두 포함하고 있으며, 더 나아가 컨테이너 로그 수집 외에도 노드 시스템 로그나 쿠버네티스 이벤트 및 여러 메트릭 수집 기능을 제공합니다. 자세한 사항은 [Grafana Alloy의 Overview](https://grafana.com/docs/alloy/latest/)와 [Introducing an OpenTelemetry Collector distribution with built-in Prometheus pipelines: Grafana Alloy](https://grafana.com/blog/2024/04/09/grafana-alloy-opentelemetry-collector-with-prometheus-pipelines/) 페이지를 참고합니다.
 
 ![Alloy 로그 수집 아키텍처](./1.png)
 
