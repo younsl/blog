@@ -110,6 +110,25 @@ In-cluster에서 alloy daemonset이 loki로 로그를 전송하기 위해서는 
 
 &nbsp;
 
+먼저 호스트(워커 노드)의 `/var/log` 볼륨을 alloy 데몬셋에 마운트합니다.
+
+value 파일에서 alloy.mounts.varlog를 기본값 false에서 true로 설정합니다.
+
+```yaml
+# alloy/values.yaml
+alloy:
+  mounts:
+    # -- Mount /var/log from the host into the container for log collection.
+    varlog: true
+    # -- Mount /var/lib/docker/containers from the host into the container for log
+    # collection.
+    dockercontainers: false
+```
+
+볼륨을 마운트해야 워커노드의 시스템 로그를 alloy가 로컬로 인식해서 수집할 수 있습니다.
+
+&nbsp;
+
 `values.yaml` 파일에 워커 노드 시스템 로그를 수집하는 설정을 추가합니다. 가장 중요한 Alloy의 모든 설정은 `configMap` 안에 있습니다. cluster 레이블을 통해 클러스터 이름을 지정합니다. `<YOUR_CLUSTER_NAME>`을 실제 클러스터 이름으로 변경해야 합니다.
 
 > YAML에서 `|-`는 [Block Scalar with Strip Chomping Indicator](https://yaml.org/spec/1.2/spec.html#id2795944)라고 부르며, 문자열을 여러줄로 작성하면서 공백을 무시하는 문법입니다. `|`와 `|-`의 차이점은 `|-`는 문자열 마지막의 개행(줄바꿈)을 제거하는 것입니다.
