@@ -57,7 +57,7 @@ Grafana Agent와 Promtail의 지원종료 일정은 아래와 같습니다.
 
 &nbsp;
 
-로그 수집기인 Alloy를 설치하기 위해 헬름 차트를 다운로드 받습니다.
+로그 수집기인 Alloy를 설치하기 위해 [공식 레포지토리](https://github.com/grafana/alloy)에서 헬름 차트를 다운로드 받습니다.
 
 ```bash
 export CHART_VERSION=0.12.5
@@ -125,11 +125,19 @@ alloy:
     dockercontainers: false
 ```
 
-볼륨을 마운트해야 워커노드의 시스템 로그를 alloy가 로컬로 인식해서 수집할 수 있습니다.
+호스트의 `/var/log` 경로를 hostPath 볼륨으로 마운트해야 워커노드의 시스템 로그를 alloy가 로컬로 인식해서 수집할 수 있습니다.
+
+![Alloy의 hostPath 볼륨 마운트](./4.png)
+
+쿠버네티스에서 [hostPath 볼륨](https://kubernetes.io/ko/docs/concepts/storage/volumes/#hostpath)은 호스트 노드의 특정 디렉터리를 파드의 컨테이너와 공유할 때 사용됩니다. 이를 통해 파드는 노드의 파일 시스템에 직접 접근하여 로그 수집이나 설정 공유와 같은 작업을 수행할 수 있습니다.
 
 &nbsp;
 
-`values.yaml` 파일에 워커 노드 시스템 로그를 수집하는 설정을 추가합니다. 가장 중요한 Alloy의 모든 설정은 `configMap` 안에 있습니다. cluster 레이블을 통해 클러스터 이름을 지정합니다. `<YOUR_CLUSTER_NAME>`을 실제 클러스터 이름으로 변경해야 합니다.
+### 노드 시스템 로그 수집
+
+`values.yaml` 파일에 워커 노드 시스템 로그를 수집하는 설정을 추가합니다. 가장 중요한 Alloy의 모든 로그 수집 설정은 `configMap` 안에 있습니다.
+
+cluster 레이블을 통해 클러스터 이름을 지정합니다. 여러 클러스터에서 로그가 수집되는 확장성까지 고려해서 어느 클러스터에서 보내진 로그인지 식별할 수 있게 `<YOUR_CLUSTER_NAME>`을 실제 클러스터 이름으로 변경해야 합니다.
 
 > YAML에서 `|-`는 [Block Scalar with Strip Chomping Indicator](https://yaml.org/spec/1.2/spec.html#id2795944)라고 부르며, 문자열을 여러줄로 작성하면서 공백을 무시하는 문법입니다. `|`와 `|-`의 차이점은 `|-`는 문자열 마지막의 개행(줄바꿈)을 제거하는 것입니다.
 
@@ -143,14 +151,28 @@ alloy:
     create: true
     # -- Content to assign to the new ConfigMap.  This is passed into `tpl` allowing for templating from values.
     content: |-
-      // Collect node logs from /var/log/syslog
+      // Collect node logs using Amazon Linux 2023
       local.file_match "node_logs" {
-        path_targets = [{
-          __path__    = "/var/log/syslog",
-          job         = "node-logs",
-          node_name   = sys.env("HOSTNAME"),
-          cluster     = "<YOUR_CLUSTER_NAME>",
-        }]
+        path_targets = [
+          {
+            __path__  = "/var/log/audit/audit.log",
+            job       = "node_log/audit",
+            node_name = sys.env("HOSTNAME"),
+            cluster   = "<YOUR_CLUSTER_NAME>",
+          },
+          {
+            __path__  = "/var/log/journal/**/*.journal",
+            job       = "node_log/journal",
+            node_name = sys.env("HOSTNAME"),
+            cluster   = "<YOUR_CLUSTER_NAME>",
+          },
+          {
+            __path__  = "/var/log/cloud-init.log",
+            job       = "node_log/cloud-init",
+            node_name = sys.env("HOSTNAME"),
+            cluster   = "<YOUR_CLUSTER_NAME>",
+          },
+        ]
       }
 
       loki.source.file "node_logs" {
@@ -165,6 +187,21 @@ alloy:
       }
 ```
 
+제 환경은 워커노드가 Amazon Linux 2023 버전을 사용하고 있어서 아래와 같은 시스템 로그들을 수집했습니다. 여기서 주의할 점은 Amazon Linux 2023의 기본 서비스 관리자는 systemd이며, systemd-journald를 사용하여 시스템 로그를 생성합니다. 따라서 `/var/log/journal` 경로에 저널 로그 파일이 존재합니다. `/var/log/messages` 경로는 rsyslog 패키지를 설치하고 활성화한 경우에만 존재합니다.
+
+- `/var/log/audit/audit.log`
+- `/var/log/journal/**/*.journal`
+- `/var/log/cloud-init.log`
+
+노드 로그는 수집 설정 전에 alloy 데몬셋 파드에 접속해서 해당 경로에 로그 파일이 실제로 존재하는지 확인해야 합니다.
+
+Amazon Linux 2023에서 시스템 로그 수집 경로에 대한 참고 자료입니다.
+
+- [systemd journal replaces rsyslog](https://docs.aws.amazon.com/linux/al2023/ug/journald.html)
+- [Why is the /var/log directory missing logs in my EC2 Amazon Linux 2023 instance?](https://repost.aws/knowledge-center/ec2-linux-al2023-find-log-files)
+
+&nbsp;
+
 Alloy가 노드 시스템 로그를 수집하는 절차는 크게 3가지 단계로 이루어집니다.
 
 - `local.file_match` 설정은 로그 파일의 경로를 지정합니다. node_name 레이블을 통해 현재 노드의 이름을 지정하고, cluster 레이블을 통해 클러스터 이름에 대한 라벨을 추가합니다.
@@ -172,6 +209,8 @@ Alloy가 노드 시스템 로그를 수집하는 절차는 크게 3가지 단계
 - `loki.write` 설정은 Loki로 로그를 전송하는 쓰기 소스를 지정합니다.
 
 &nbsp;
+
+### 파드 컨테이너 로그 수집
 
 이제 `values.yaml` 파일에 파드 컨테이너 로그를 수집하는 설정을 추가합니다. Alloy는 Kubernetes API를 통해 파드 컨테이너 로그를 수집합니다.
 
@@ -299,7 +338,7 @@ helm upgrade \
   --install \
   --create-namespace \
   --namespace alloy \
-  --values values_ops_mgmt.yaml \
+  --values values.yaml \
   alloy .
 ```
 
@@ -328,14 +367,28 @@ kubectl get configmap -n alloy alloy -o yaml
 apiVersion: v1
 data:
   config.alloy: |-
-    // Collect node logs from /var/log/syslog
+    // Collect node logs using Amazon Linux 2023
     local.file_match "node_logs" {
-      path_targets = [{
-        __path__    = "/var/log/syslog",
-        job         = "node-logs",
-        node_name   = sys.env("HOSTNAME"),
-        cluster     = "<YOUR_CLUSTER_NAME>",
-      }]
+      path_targets = [
+        {
+          __path__  = "/var/log/audit/audit.log",
+          job       = "node_log/audit",
+          node_name = sys.env("HOSTNAME"),
+          cluster   = "<YOUR_CLUSTER_NAME>",
+        },
+        {
+          __path__  = "/var/log/journal/**/*.journal",
+          job       = "node_log/journal",
+          node_name = sys.env("HOSTNAME"),
+          cluster   = "<YOUR_CLUSTER_NAME>",
+        },
+        {
+          __path__  = "/var/log/cloud-init.log",
+          job       = "node_log/cloud-init",
+          node_name = sys.env("HOSTNAME"),
+          cluster   = "<YOUR_CLUSTER_NAME>",
+        },
+      ]
     }
 
     loki.source.file "node_logs" {
@@ -476,13 +529,336 @@ kubectl port-forward -n alloy pod/alloy-ct4vr 12345
 open http://localhost:12345
 ```
 
-![Alloy UI 메인화면](./4.png)
+![Alloy UI 메인화면](./5.png)
 
 &nbsp;
 
 로그 수집이 정상적으로 되지 않을 경우, 아래와 같이 Alloy UI에 접속해서 설정 상태 및 로그의 라벨링 정보, 로그 데이터를 확인할 수 있습니다.
 
-![Alloy UI에서 확인한 로그 데이터](./5.png)
+![Alloy UI에서 확인한 로그 데이터](./6.png)
+
+&nbsp;
+
+### 노드 시스템 로그를 동적으로 수집
+
+Kubernetes 노드 로그 수집 설정을 동적으로 수집하는 방법을 설명합니다. 이전에는 아래와 같이 local.file_match 설정을 사용했습니다.
+
+```yaml
+alloy:
+  configMap:
+    content: |-
+      local.file_match "node_logs" {
+        path_targets = [
+          {
+            __path__  = "/var/log/audit/audit.log",
+            job       = "node_log/audit",
+            node_name = sys.env("HOSTNAME"),
+            cluster   = "<YOUR_CLUSTER_NAME>",
+          },
+        ]
+      }
+```
+
+&nbsp;
+
+이번에는 노드의 시스템 로그 수집 설정에서 local.file_match 설정을 사용하지 않고, discovery.kubernetes 설정을 사용해서 노드 로그를 수집합니다. discovery.kubernetes 설정의 장점은 __meta_kubernetes_node_label_<labelname> 라벨을 사용해서, 쿠버네티스 노드에 설정된 라벨 정보를 그대로 로그에 전달할 수 있다는 점입니다. 예를 들어 노드그룹의 이름 정보가 담긴 라벨을 사용해서 노드 로그를 수집할 수 있습니다.
+
+![Node-level multiple log files](./7.png)
+
+아래와 같은 라벨을 사용해서 노드 로그에 라벨 정보를 추가할 수 있습니다. 이러한 쿠버네티스 노드 라벨 정보를 그대로 로그에 전달할 수 있으므로 사용자가 로그 검색시 더 다양한 필터링 조건을 사용할 수 있습니다.
+
+- 노드의 karpenter.sh/nodepool 라벨을 사용하려면 source_labels에 __meta_kubernetes_node_label_karpenter_sh_nodepool 라벨을 추가합니다. 만약 대상 워커노드에 karpenter.sh/nodepool 라벨이 없으면 라벨 추가 없이 생략하고 로그 수집을 진행합니다.
+- 노드의 node.kubernetes.io/name 라벨을 사용하려면 source_labels에 __meta_kubernetes_node_label_node_kubernetes_io_name 라벨을 추가합니다. 만약 대상 워커노드에 node.kubernetes.io/name 라벨이 없으면 라벨 추가 없이 생략하고 로그 수집을 진행합니다.
+
+&nbsp;
+
+Alloy의 노드 및 파드 로그 수집 설정은 아래와 같습니다.
+
+```yaml
+## Various Alloy settings. For backwards compatibility with the grafana-agent
+## chart, this field may also be called "agent". Naming this field "agent" is
+## deprecated and will be removed in a future release.
+alloy:
+  configMap:
+    # -- Create a new ConfigMap for the config file.
+    create: true
+    # -- Content to assign to the new ConfigMap.  This is passed into `tpl` allowing for templating from values.
+    content: |-
+      // Collect node logs from /var/log/audit/audit.log, /var/log/journal/**/*.journal, and /var/log/cloud-init.log
+      discovery.kubernetes "node" {
+        role = "node"
+      }
+
+      discovery.relabel "audit_logs" {
+        targets = discovery.kubernetes.node.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
+          action        = "replace"
+          target_label  = "nodegroup"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "/var/log/audit/audit.log"
+          target_label = "__path__"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "node_log/audit"
+          target_label = "job"
+        }
+
+        // You can use sys.env("HOSTNAME") to get the node name
+        // from alloy container's environment variable.
+        rule {
+          action       = "replace"
+          replacement  = sys.env("HOSTNAME")
+          target_label = "node_name"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "<YOUR_CLUSTER_NAME>"
+          target_label = "cluster"
+        }
+      }
+
+      discovery.relabel "journal_logs" {
+        targets = discovery.kubernetes.node.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
+          action        = "replace"
+          target_label  = "nodegroup"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "/var/log/journal/**/*.journal"
+          target_label = "__path__"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "node_log/journal"
+          target_label = "job"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = sys.env("HOSTNAME")
+          target_label = "node_name"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "<YOUR_CLUSTER_NAME>"
+          target_label = "cluster"
+        }
+      }
+
+      discovery.relabel "cloud_init_logs" {
+        targets = discovery.kubernetes.node.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
+          action        = "replace"
+          target_label  = "nodegroup"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "/var/log/cloud-init.log"
+          target_label = "__path__"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "node_log/init"
+          target_label = "job"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = sys.env("HOSTNAME")
+          target_label = "node_name"
+        }
+
+        rule {
+          action       = "replace"
+          replacement  = "<YOUR_CLUSTER_NAME>"
+          target_label = "cluster"
+        }
+      }
+
+      // Concatenate the output of the three discovery.relabel configurations
+      // using concat() function.
+      loki.source.file "node_logs" {
+        targets    = concat(
+          discovery.relabel.audit_logs.output,
+          discovery.relabel.journal_logs.output,
+          discovery.relabel.cloud_init_logs.output,
+        )
+        forward_to = [loki.write.loki_gateway.receiver]
+      }
+
+      loki.write "loki_gateway" {
+        endpoint {
+          url = "http://loki-gateway.loki/loki/api/v1/push"
+        }
+      }
+
+      // Collect pod logs from /var/log/containers/*.log
+      // It watches cluster state and ensures targets are continually synced with what is currently running in your cluster.
+      discovery.kubernetes "pod" {
+        role = "pod"
+      }
+
+      // discovery.relabel rewrites the label set of the input targets by applying one or more relabeling rules.
+      // If no rules are defined, then the input targets are exported as-is.
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pod.targets
+
+        // Label creation - "namespace" field from "__meta_kubernetes_namespace"
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          action = "replace"
+          target_label = "namespace"
+        }
+
+        // Label creation - "pod" field from "__meta_kubernetes_pod_name"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          action = "replace"
+          target_label = "pod"
+        }
+
+        // Label creation - "controller_kind" field from "__meta_kubernetes_pod_controller_kind"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_controller_kind"]
+          action = "replace"
+          target_label = "controller"
+        }
+
+        // Label creation - "container" field from "__meta_kubernetes_pod_container_name"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          action = "replace"
+          target_label = "container"
+        }
+
+        // Label creation -  "app" field from "__meta_kubernetes_pod_label_app_kubernetes_io_name"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          action = "replace"
+          target_label = "app"
+        }
+
+        // Label creation -  "job" field from "__meta_kubernetes_namespace" and "__meta_kubernetes_pod_container_name"
+        // Concatenate values __meta_kubernetes_namespace/__meta_kubernetes_pod_container_name
+        rule {
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+          action = "replace"
+          target_label = "job"
+          separator = "/"
+          replacement = "$1"
+        }
+
+        // Label creation - "container" field from "__meta_kubernetes_pod_uid" and "__meta_kubernetes_pod_container_name"
+        // Concatenate values __meta_kubernetes_pod_uid/__meta_kubernetes_pod_container_name.log
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          action = "replace"
+          target_label = "__path__"
+          separator = "/"
+          replacement = "/var/log/pods/*$1/*.log"
+        }
+
+        // Label creation -  "container_runtime" field from "__meta_kubernetes_pod_container_id"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_id"]
+          action = "replace"
+          target_label = "container_runtime"
+          regex = "^(\\S+):\\/\\/.+$"
+          replacement = "$1"
+        }
+      }
+
+      // loki.source.kubernetes tails logs from Kubernetes containers using the Kubernetes API.
+      loki.source.kubernetes "pod_logs" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.process.pod_logs.receiver]
+      }
+
+      // loki.process receives log entries from other Loki components, applies one or more processing stages,
+      // and forwards the results to the list of receivers in the component's arguments.
+      loki.process "pod_logs" {
+        stage.static_labels {
+          values = {
+            cluster = "<YOUR_CLUSTER_NAME>",
+          }
+        }
+
+        forward_to = [loki.write.loki_gateway.receiver]
+      }
+```
+
+&nbsp;
+
+해당 노드 로그 수집 설정의 흐름은 아래와 같이 진행됩니다.
+
+```bash
+1. discovery.kubernetes "node"
+   │
+   │ targets 생성 (노드 목록)
+   ▼
+2. discovery.relabel "audit_logs", "journal_logs", "cloud_init_logs"
+   │
+   │ 각 타겟에 라벨 추가 및 수정:
+   │ - nodegroup 라벨 추가 (노드풀 정보)
+   │ - __path__ 라벨 설정 (각 로그 타입별 경로)
+   │ - job 라벨 설정
+   │ - node_name 라벨 설정
+   │ - cluster 라벨 설정
+   │
+   │ output 생성 (라벨이 추가된 타겟)
+   ▼
+3. loki.source.file "node_logs"
+   │
+   │ 세 가지 리라벨링 결과를 concat()으로 병합하여
+   │ 지정된 경로의 로그 파일 읽기:
+   │ - /var/log/audit/audit.log
+   │ - /var/log/journal/**/*.journal
+   │ - /var/log/cloud-init.log
+   │
+   │ 추가된 라벨과 함께 로그 수집
+   ▼
+4. loki.write "loki_gateway"
+   │
+   │ Loki 게이트웨이로 로그 전송:
+   │ "http://loki-gateway.loki/loki/api/v1/push"
+   ▼
+5. Loki에 저장 완료
+```
+
+요약하자면 Alloy가 노드 시스템 로그를 수집하는 방법은 크게 2가지입니다.
+
+1. [local.file_match](https://grafana.com/docs/alloy/latest/reference/components/local/local.file_match/) 컴포넌트를 사용하는 방법: 정말로 노드 시스템 로그 파일 경로를 직접 지정해서 수집하는 방법입니다.
+2. [discovery.kubernetes](https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.kubernetes/) 컴포넌트로 대상 노드를 검색하고, [discovery.relabel](https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.relabel/) 컴포넌트로 라벨을 추가하는 방법
+
+방금 전에 사용한 노드 로그 수집 설정은 두 번째 방법을 사용한 설정입니다. 첫 번째 방법은 노드 로그 파일 경로를 직접 지정하는 방법이고, 두 번째 방법은 노드 로그 파일 경로를 검색하고, 라벨을 추가하는 방법입니다. discovery.kubernetes 설정으로 대상 노드를 검색하고, discovery.relabel 설정으로 라벨을 추가하는 방법은 좀 더 라벨링이 유연하고 쿠버네티스의 워커노드 라벨 정보를 그대로 로그에 전달할 수 있으므로 두 번째 방법을 사용하는 것을 권장합니다.
+
+&nbsp;
+
+## 아직 해결하지 못한 문제
+
+### 저널로그가 깨지는 문제
+
+이 가이드에서 제시한 설정으로 노드 시스템 로그를 수집하면 정상적으로 수집되는 것을 확인했습니다. 하지만 저널로그는 Journal 로그가 정상적으로 원하는 라벨을 가지고 수집되지만 로그의 일부 내용이 깨지는 문제가 있습니다.
+
+저널 로그는 일반적인 로그 파일이 아니라 바이너리 파일이라 일반적인 로그 파일 수집 방법으로는 수집할 수 없습니다. 이 문제를 해결하기 위해서는 [loki.source.journal 컴포넌트](https://grafana.com/docs/alloy/v1.0/reference/components/loki/loki.source.journal/)를 사용해서 수집해야 합니다.
 
 &nbsp;
 
@@ -497,3 +873,8 @@ Alloy:
 Promtail:
 
 - [[promtail] is promtail chart abandoned? #3614](https://github.com/grafana/helm-charts/issues/3614)
+
+Amazon Linux 2023:
+
+- [systemd journal replaces rsyslog](https://docs.aws.amazon.com/ko_kr/linux/al2023/ug/journald.html)
+- [Why is the /var/log directory missing logs in my EC2 Amazon Linux 2023 instance?](https://repost.aws/knowledge-center/ec2-linux-al2023-find-log-files)
