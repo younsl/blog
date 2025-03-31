@@ -110,6 +110,8 @@ In-cluster에서 alloy daemonset이 loki로 로그를 전송하기 위해서는 
 
 &nbsp;
 
+### 노드 시스템 로그 수집
+
 먼저 호스트(워커 노드)의 `/var/log` 볼륨을 alloy 데몬셋에 마운트합니다.
 
 value 파일에서 alloy.mounts.varlog를 기본값 false에서 true로 설정합니다.
@@ -132,8 +134,6 @@ alloy:
 쿠버네티스에서 [hostPath 볼륨](https://kubernetes.io/ko/docs/concepts/storage/volumes/#hostpath)은 호스트 노드의 특정 디렉터리를 파드의 컨테이너와 공유할 때 사용됩니다. 이를 통해 파드는 노드의 파일 시스템에 직접 접근하여 로그 수집이나 설정 공유와 같은 작업을 수행할 수 있습니다.
 
 &nbsp;
-
-### 노드 시스템 로그 수집
 
 `values.yaml` 파일에 워커 노드 시스템 로그를 수집하는 설정을 추가합니다. 가장 중요한 Alloy의 모든 로그 수집 설정은 `configMap` 안에 있습니다.
 
@@ -747,9 +747,7 @@ open http://localhost:12345
 
 &nbsp;
 
-이번에는 노드의 시스템 로그 수집 설정에서 local.file_match 설정을 사용하지 않고, discovery.kubernetes 설정을 사용해서 노드 로그를 수집합니다. discovery.kubernetes 설정의 장점은 __meta_kubernetes_node_label_<labelname> 라벨을 사용해서, 쿠버네티스 노드에 설정된 라벨 정보를 그대로 로그에 전달할 수 있다는 점입니다. 예를 들어 노드그룹의 이름 정보가 담긴 라벨을 사용해서 노드 로그를 수집할 수 있습니다.
-
-![Node-level multiple log files](./7.png)
+노드의 시스템 로그 수집 설정에서 local.file_match 설정을 사용하지 않고, discovery.kubernetes 설정을 사용해서 노드 로그를 수집합니다. discovery.kubernetes 설정의 장점은 __meta_kubernetes_node_label_<labelname> 라벨을 사용해서, 쿠버네티스 노드에 설정된 라벨 정보를 그대로 로그에 전달할 수 있다는 점입니다. 예를 들어 노드그룹의 이름 정보가 담긴 라벨을 사용해서 노드 로그를 수집할 수 있습니다.
 
 아래와 같은 라벨을 사용해서 노드 로그에 라벨 정보를 추가할 수 있습니다. 이러한 쿠버네티스 노드 라벨 정보를 그대로 로그에 전달할 수 있으므로 사용자가 로그 검색시 더 다양한 필터링 조건을 사용할 수 있습니다.
 
@@ -1002,12 +1000,16 @@ alloy:
 
 &nbsp;
 
-요약하자면 Alloy가 노드 시스템 로그를 수집하는 방법은 크게 2가지입니다.
+Alloy가 노드 및 파드(컨테이너) 로그를 수집하는 방법은 크게 2가지입니다.
 
-1. [local.file_match](https://grafana.com/docs/alloy/latest/reference/components/local/local.file_match/) 컴포넌트를 사용하는 방법: 정말로 노드 시스템 로그 파일 경로를 직접 지정해서 수집하는 방법입니다. 공식문서에서는 노드 로그를 local.file_match 방법으로 노드 로그를 수집하는 방법을 설명합니다.
-2. [discovery.kubernetes](https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.kubernetes/) 컴포넌트로 대상 노드를 검색하고, [discovery.relabel](https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.relabel/) 컴포넌트로 라벨을 추가하는 방법
+1. **[local.file_match](https://grafana.com/docs/alloy/latest/reference/components/local/local.file_match/) 컴포넌트**를 사용하는 방법: 시스템 로그와 컨테이너 로그 파일 경로를 직접 지정해서 수집하는 방법입니다. [Alloy 공식문서](https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#system-logs)에서는 local.file_match 컴포넌트를 사용해서 노드 로그를 수집하는 방법을 설명합니다.
+2. **[discovery.kubernetes](https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.kubernetes/) 컴포넌트**로 대상 노드를 검색하고, [discovery.relabel](https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.relabel/) 컴포넌트로 라벨을 추가하는 방법
 
 방금 전에 사용한 노드 로그 수집 설정은 두 번째 방법을 사용한 설정입니다. 첫 번째 방법은 노드 로그 파일 경로를 직접 지정하는 방법이고, 두 번째 방법은 노드 로그 파일 경로를 검색하고, 라벨을 추가하는 방법입니다. discovery.kubernetes 설정으로 대상 노드를 검색하고, discovery.relabel 설정으로 라벨을 추가하는 방법은 좀 더 라벨링이 유연하고 쿠버네티스의 워커노드 라벨 정보를 그대로 로그에 전달할 수 있는 쿠버네티스 네이티브 방법입니다. 따라서 쿠버네티스의 워커노드가 수집대상인 경우, 두 번째 방법을 사용하는 것을 권장합니다.
+
+결과적으로 Alloy가 로그를 수집하고 가공한 후 전송하는 일련의 과정은 아래와 같습니다.
+
+![Summary](./7.png)
 
 &nbsp;
 
@@ -1015,7 +1017,11 @@ alloy:
 
 ### 저널로그가 깨지는 문제
 
-`/var/log/journal` 경로에 저장된 .journal 파일은 바이너리 파일이라 일반적인 로그 파일 수집 방법으로는 수집하면 로그 내용을 볼 때 깨지는 문제가 있습니다. 이 문제를 해결하기 위해서는 일반적인  [loki.source.journal 컴포넌트](https://grafana.com/docs/alloy/v1.0/reference/components/loki/loki.source.journal/)를 사용해서 수집해야 합니다.
+`/var/log/journal` 경로에 저장된 .journal 파일은 바이너리 파일이라 일반적인 로그 파일 수집 방법으로는 수집하면 로그 내용을 볼 때 깨지는 문제가 있습니다. 이 문제를 해결하기 위해서는 loki.source.file 대신 [loki.source.journal 컴포넌트](https://grafana.com/docs/alloy/v1.0/reference/components/loki/loki.source.journal/)를 사용해서 수집해야 합니다.
+
+잘못된 Alloy 설정 예시는 아래와 같습니다. (loki.source.file 컴포넌트를 사용한 설정)
+
+![Journal 로그 깨짐 현상](./8.png)
 
 &nbsp;
 
