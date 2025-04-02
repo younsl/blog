@@ -6,8 +6,6 @@ slug: ""
 description: "GopherCon Korea 2023을 다녀온 후기"
 keywords: []
 tags: ["programming", "go", "conference"]
-showComments: true
-showAdvertisement: false
 ---
 
 ## 개요
