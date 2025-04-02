@@ -167,6 +167,12 @@ alloy:
         }
 
         rule {
+          source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+          action        = "replace"
+          target_label  = "zone"
+        }
+
+        rule {
           action       = "replace"
           replacement  = "/var/log/audit/audit.log"
           target_label = "__path__"
@@ -202,6 +208,12 @@ alloy:
         }
 
         rule {
+          source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+          action        = "replace"
+          target_label  = "zone"
+        }
+
+        rule {
           action       = "replace"
           replacement  = "/var/log/journal/**/*.journal"
           target_label = "__path__"
@@ -226,7 +238,7 @@ alloy:
         }
       }
 
-      // [3/4] Relabel Cloud Init Logs
+      // [2/4] Relabel Cloud Init Logs
       discovery.relabel "cloud_init_logs" {
         targets = discovery.kubernetes.node.targets
 
@@ -234,6 +246,12 @@ alloy:
           source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
           action        = "replace"
           target_label  = "nodegroup"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+          action        = "replace"
+          target_label  = "zone"
         }
 
         rule {
@@ -292,10 +310,30 @@ alloy:
 - `/var/log/cloud-init.log`: discovery.relabel로 수집
 - `/var/log/journal/**/*.journal`: 일반적인 텍스트 기반의 로그 파일이 아닌 바이너리 파일이므로 loki.source.journal로 수집
 
-여기서 주의할 점은 크게 2가지가 있습니다.
+&nbsp;
 
-- Amazon Linux 2023의 기본 서비스 관리자는 systemd이며, systemd-journald를 사용하여 시스템 로그를 생성합니다. 따라서 `/var/log/journal` 경로에 저널 로그 파일이 존재합니다. `/var/log/messages` 경로는 rsyslog 패키지를 설치하고 활성화한 경우에만 존재하며 기본적으로는 존재하지 않습니다.
-- journal 로그는 바이너리 파일이라 일반적인 로그 파일 수집 방법으로는 수집할 수 없습니다. 이 문제를 해결하기 위해서는 [loki.source.journal 컴포넌트](https://grafana.com/docs/alloy/v1.0/reference/components/loki/loki.source.journal/)를 사용해서 수집해야 합니다. local.source.file로 수집하면 로그 내용을 볼 때 깨지는 문제가 있습니다.
+loki.source.journal 컴포넌트로 수집한 저널 로그는 job 라벨이 `loki.source.journal.<NAME>` 형식으로 생성됩니다. 이 라벨을 통해 수집한 로그를 구분할 수 있습니다.
+
+아래와 같이 이전 과정에서 Relabel을 이미한 경우에는 지정한 값이 job 라벨에 추가됩니다.
+
+```yaml
+discovery.relabel "journal_logs" {
+  rule {
+    action       = "replace"
+    replacement  = "node_log/journal"
+    target_label = "job"
+  }
+}
+```
+
+&nbsp;
+
+#### 노드 시스템 로그 수집 주의사항
+
+노드 시스템 로그를 수집할 때 주의할 점은 크게 2가지가 있습니다.
+
+1. **AL2와 AL2023의 차이점**: Amazon Linux 2023의 기본 서비스 관리자는 systemd이며, systemd-journald를 사용하여 시스템 로그를 생성합니다. 따라서 `/var/log/journal` 경로에 저널 로그 파일이 존재하며 기본적으로는 `/var/log/messages` 로그를 사용하지 않습니다. 물론 Amazon Linux 2는 여전히 `/var/log/messages` 로그를 사용합니다.
+2. **저널로그의 특성**: ⚠️ journal 로그는 바이너리 파일이라 일반적인 로그 파일 수집 방법으로는 수집할 수 없습니다. 이 문제를 해결하기 위해서는 [loki.source.journal 컴포넌트](https://grafana.com/docs/alloy/v1.0/reference/components/loki/loki.source.journal/)를 사용해서 수집해야 합니다. local.source.file 컴포넌트를 사용해서 수집하면 로그 수집은 되지만 로그 내용을 볼 때 깨지는 문제가 있습니다.
 
 &nbsp;
 
@@ -480,7 +518,7 @@ data:
       role = "node"
     }
 
-    // [2/4] Relabel Audit Logs
+    // [2/4] Relabel audit logs
     discovery.relabel "audit_logs" {
       targets = discovery.kubernetes.node.targets
 
@@ -488,6 +526,12 @@ data:
         source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
         action        = "replace"
         target_label  = "nodegroup"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+        action        = "replace"
+        target_label  = "zone"
       }
 
       rule {
@@ -515,7 +559,7 @@ data:
       }
     }
 
-    // [2/4] Relabel Audit Logs
+    // [2/4] Relabel journal logs
     discovery.relabel "journal_logs" {
       targets = discovery.kubernetes.node.targets
 
@@ -523,6 +567,12 @@ data:
         source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
         action        = "replace"
         target_label  = "nodegroup"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+        action        = "replace"
+        target_label  = "zone"
       }
 
       rule {
@@ -550,7 +600,7 @@ data:
       }
     }
 
-    // [3/4] Relabel Cloud Init Logs
+    // [2/4] Relabel cloud-init logs
     discovery.relabel "cloud_init_logs" {
       targets = discovery.kubernetes.node.targets
 
@@ -558,6 +608,12 @@ data:
         source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
         action        = "replace"
         target_label  = "nodegroup"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+        action        = "replace"
+        target_label  = "zone"
       }
 
       rule {
@@ -773,7 +829,7 @@ alloy:
         role = "node"
       }
 
-      // [2/4] Relabel Audit Logs
+      // [2/4] Relabel audit logs
       discovery.relabel "audit_logs" {
         targets = discovery.kubernetes.node.targets
 
@@ -781,6 +837,12 @@ alloy:
           source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
           action        = "replace"
           target_label  = "nodegroup"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+          action        = "replace"
+          target_label  = "zone"
         }
 
         rule {
@@ -808,7 +870,7 @@ alloy:
         }
       }
 
-      // [2/4] Relabel Audit Logs
+      // [2/4] Relabel journal logs
       discovery.relabel "journal_logs" {
         targets = discovery.kubernetes.node.targets
 
@@ -816,6 +878,12 @@ alloy:
           source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
           action        = "replace"
           target_label  = "nodegroup"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+          action        = "replace"
+          target_label  = "zone"
         }
 
         rule {
@@ -843,7 +911,7 @@ alloy:
         }
       }
 
-      // [3/4] Relabel Cloud Init Logs
+      // [3/4] Relabel cloud-init logs
       discovery.relabel "cloud_init_logs" {
         targets = discovery.kubernetes.node.targets
 
@@ -851,6 +919,12 @@ alloy:
           source_labels = ["__meta_kubernetes_node_label_karpenter_sh_nodepool"]
           action        = "replace"
           target_label  = "nodegroup"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_label_topology_kubernetes_io_zone"]
+          action        = "replace"
+          target_label  = "zone"
         }
 
         rule {
