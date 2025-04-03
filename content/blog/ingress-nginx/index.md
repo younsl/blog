@@ -272,6 +272,22 @@ ingress-nginx-controller와 같은 Ingress controller를 사용하지 않으면 
 
 &nbsp;
 
+## 더 나아가서
+
+### Gateway API - Ingress의 미래
+
+Kubernetes에서 Ingress API는 장기적으로 Gateway API로 대체될 예정입니다. Gateway API는 Ingress의 한계를 극복하고 더 유연하고 강력한 라우팅 기능을 제공합니다. 중요한 점은 Kubernetes 커뮤니티가 Ingress API에 대한 추가 기능 업데이트를 중단하고, 모든 새로운 네트워킹 기능을 Gateway API에 집중하고 있다는 것입니다.
+
+[Gateway API 기반 k8s resources(Gateway, HTTPRoute)와 타 k8s resources(Service, Pod)와의 관계도](https://gateway-api.sigs.k8s.io/api-types/httproute/):
+
+![Gateway API](./7.png)
+
+Gateway API는 더 세분화된 라우팅 제어, 다양한 프로토콜 지원(HTTP, TCP, UDP 등), 트래픽 분할 및 가중치 기반 라우팅을 제공합니다. 또한 향상된 보안 정책과 인프라 관리자와 애플리케이션 개발자 간 더 명확한 역할 분리를 가능하게 합니다.
+
+현재 프로덕션 환경에서는 Ingress가 널리 사용되고 있지만, 새로운 프로젝트를 시작하거나 아키텍처를 개선할 때는 Gateway API 도입을 고려해 보는 것이 좋습니다. Ingress는 Ingress Nginx Controller를 통해 구현할 수 있으며, Gateway API는 NGINX에서 제공하는 [Nginx Gateway Fabric](https://github.com/nginx/nginx-gateway-fabric)을 통해 구현할 수 있습니다.
+
+&nbsp;
+
 ## 참고자료
 
 AWS Network Load Balancer:
