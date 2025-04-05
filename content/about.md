@@ -11,7 +11,7 @@ showAdvertisement: false
 
 ## Younsung Lee
 
-DevOps Engineer and Gopher. I work in cloud-based distributed systems like Kubernetes. I also have a general interest in cloud native technologies including Kubernetes, Observability, and Automation for Infrastructure operations. Especially interested in the [Kubernetes Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) for automation in operation things.
+DevOps Engineer and Gopher. Coinone, x-Greenlabs Financial, x-Watcha, x-KDN
 
 [Github](https://github.com/younsl)
 
