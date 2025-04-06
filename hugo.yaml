@@ -20,6 +20,8 @@ markup:
       attribute:
         block: true
         title: true
+    renderer:
+      unsafe: false
   
   highlight:
     anchorLineNos: true
