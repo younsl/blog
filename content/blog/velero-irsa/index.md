@@ -378,7 +378,7 @@ configuration:
     TZ: Asia/Seoul
 ```
 
-관련 이슈는 [#2061](https://github.com/vmware-tanzu/velero/issues/2061)입니다.
+> Velero [v1.6.0](https://github.com/vmware-tanzu/velero/releases/tag/v1.6.0) 버전 이상에서만 `TZ` 환경변수를 사용할 수 있습니다. 관련 이슈는 [#2061](https://github.com/vmware-tanzu/velero/issues/2061)입니다.
 
 &nbsp;
 
