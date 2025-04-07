@@ -369,7 +369,43 @@ configuration:
 
 &nbsp;
 
-이후 새로운 설정을 적용하기 위해 velero 차트를 업그레이드합니다. 아래 명령어는 최초 설치 시에도 사용할 수 있습니다. `helm upgrade --install` 명령어는 차트가 설치되어 있지 않을 경우 새로운 설치를 진행하며, 이미 설치되어 있는 경우에는 차트를 업그레이드합니다. 따라서 초기 설치와 차트 업그레이드를 동일한 명령어로 처리할 수 있습니다.
+IANA 시간대를 이후 스케줄 백업에 사용하기 위해 `extraEnvVars` 설정을 헬름 차트에 추가합니다.
+
+```yaml
+# charts/velero/YOUR_VALUES_FILE.yaml
+configuration:
+  extraEnvVars:
+    TZ: Asia/Seoul
+```
+
+관련 이슈는 [#2061](https://github.com/vmware-tanzu/velero/issues/2061)입니다.
+
+&nbsp;
+
+나중에 헬름 차트에 설정한 `extraEnvVars` 설정은 다음과 같이 파드 환경변수에 적용됩니다.
+
+```bash
+kubectl get pod -n velero -o yaml
+```
+
+```yaml
+# velero pod's yaml
+spec:
+  containers:
+  - args:
+    - server
+    - --uploader-type=kopia
+    - --keep-latest-maintenance-jobs=3
+    command:
+    - /velero
+    env:
+    - name: TZ
+      value: Asia/Seoul
+```
+
+&nbsp;
+
+새로운 설정을 적용하기 위해 velero 차트를 업그레이드합니다. 아래 명령어는 최초 설치 시에도 사용할 수 있습니다. `helm upgrade --install` 명령어는 차트가 설치되어 있지 않을 경우 새로운 설치를 진행하며, 이미 설치되어 있는 경우에는 차트를 업그레이드합니다. 따라서 초기 설치와 차트 업그레이드를 동일한 명령어로 처리할 수 있습니다.
 
 ```bash
 helm upgrade \
@@ -377,7 +413,7 @@ helm upgrade \
   --namespace velero \
   --create-namespace \
   velero . \
-  --values <your-values-file.yaml> \
+  --values <your-values-file>.yaml \
   --wait
 ```
 
@@ -409,7 +445,7 @@ metadata:
 
 ### S3 연결상태 확인
 
-Velero 서버는 백업 스토리지로 S3를 사용합니다. 이 때 `backupStorageLocation`<sup>bsl</sup> 리소스를 사용해서 S3에 연결됩니다.
+Velero 서버는 백업 스토리지로 S3 버킷을 사용합니다. 이 때 Velero는 백업 스토리지 위치를 지정하는 `backupStorageLocation`<sup>bsl</sup> 커스텀 리소스를 사용해서 S3 버킷에 연결됩니다.
 
 ![bsl](./2.png)
 
@@ -462,12 +498,15 @@ velero delete backup test-backup
 
 ## 관련자료
 
-**Velero**  
-[How to Setup Velero Backups On EKS Using IAM Roles for Service Accounts (IRSA)](https://cloudcasa.io/blog/how-to-setup-velero-backups-on-eks-using-iam-roles-for-service-accounts-irsa/)
+Blog article for velero IRSA:
 
-**IRSA**  
-[IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
+- [How to Setup Velero Backups On EKS Using IAM Roles for Service Accounts (IRSA)](https://cloudcasa.io/blog/how-to-setup-velero-backups-on-eks-using-iam-roles-for-service-accounts-irsa/)
 
-**EKS Pod Identity**  
-[Amazon EKS Pod Identity, Amazon EKS 클러스터앱의 IAM 권한 단순화](https://aws.amazon.com/ko/blogs/korea/amazon-eks-pod-identity-simplifies-iam-permissions-for-applications-on-amazon-eks-clusters/)  
-[EKS Pod Identity](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/pod-identities.html)
+AWS IRSA:
+
+- [IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
+
+AWS EKS Pod Identity:
+
+- [Amazon EKS Pod Identity, Amazon EKS 클러스터앱의 IAM 권한 단순화](https://aws.amazon.com/ko/blogs/korea/amazon-eks-pod-identity-simplifies-iam-permissions-for-applications-on-amazon-eks-clusters/)  
+- [EKS Pod Identity](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/pod-identities.html)
