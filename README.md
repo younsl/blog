@@ -1,8 +1,8 @@
 # blog
 
-## Summary
+<img src="https://github.com/younsl/box/blob/main/box/assets/pink-container-84x84.png" alt="pink container logo" width="84" height="84">
 
-[![Blog logo](./static/favicon-32x32.png)](https://younsl.xyz)
+## Summary
 
 [younsl.xyz](https://younsl.xyz) is my personal tech blog and [helm chart repository](https://younsl.xyz/charts) built with [hugo][hugo].
 
