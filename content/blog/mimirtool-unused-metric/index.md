@@ -440,8 +440,9 @@ flowchart LR
     D2[Pod]
   end
 
-  A e1@--watch--> B e2@--select--> C e3@--/metrics--> D1
-  C e4@--metrics--> D2
+  A e1@--watch--> B e2@--select--> C
+  C e3@--/metrics--> D1
+  C e4@--/metrics--> D2
 
   style B fill:orange,stroke:#white,stroke-width:1px,color:white
 
