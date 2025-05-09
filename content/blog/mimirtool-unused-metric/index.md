@@ -440,9 +440,15 @@ flowchart LR
     D2[Pod]
   end
 
-  A --watch--> B --select--> C --/metrics--> D1 & D2
+  A e1@--watch--> B e2@--select--> C e3@--/metrics--> D1
+  C e4@--metrics--> D2
 
   style B fill:orange,stroke:#white,stroke-width:1px,color:white
+
+  e1@{ animate: true }
+  e2@{ animate: true }
+  e3@{ animate: true }
+  e4@{ animate: true }
 ```
 
 이처럼 Prometheus에서 미사용 메트릭을 수집하지 않도록 drop 설정을 추가하면 미사용 메트릭을 제외한 중요한 메트릭만 수집되어 모니터링 시스템의 부하를 줄이고 비용을 절감할 수 있습니다. 약 91%의 메트릭을 제외하고 수집하는 것으로 비용 및 저장 공간을 절감할 수 있었습니다.
