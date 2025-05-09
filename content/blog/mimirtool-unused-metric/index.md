@@ -444,7 +444,7 @@ flowchart LR
   C e3@--/metrics--> D1
   C e4@--/metrics--> D2
 
-  style B fill:orange,stroke:#white,stroke-width:1px,color:white
+  style B fill:darkorange,stroke:#white,stroke-width:1px,color:white
 
   e1@{ animate: true }
   e2@{ animate: true }

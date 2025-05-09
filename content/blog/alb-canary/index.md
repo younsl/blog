@@ -45,7 +45,7 @@ flowchart LR
   e1@{ animate: true, animation: fast }
   e2@{ animate: true, animation: slow }
 
-  style A fill:orange,color:white,stroke:white,stroke-width:2px
+  style A fill:darkorange,color:white,stroke:white,stroke-width:2px
 
   %% This is a note
   noteA["**Note**: ALB is managed by Load Balancer Controller via Ingress annotations"]
@@ -108,7 +108,7 @@ flowchart LR
 
   L --Watch--> I --Reconcile--> A
 
-  style I fill:orange,color:white,stroke:white,stroke-width:2px
+  style I fill:darkorange,color:white,stroke:white,stroke-width:2px
 ```
 
 &nbsp;
