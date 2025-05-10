@@ -155,7 +155,29 @@ $ kubectl describe ingress -n default my-external-ingress
 
 ### 카나리 작업 브랜치 분리
 
-만약 ArgoCD를 사용해서 GitOps 방식으로 Ingress (ALB) 리소스의 설정을 관리하고 있다면, 카나리 작업 브랜치를 별도로 분리하는 것을 권장합니다. 왜냐하면 이 방식은 Ingress 리소스의 어노테이션에 선언된 비율 값을 변경하는 것이기 때문에, 이 값을 변경하는 과정에서 alb.ingress.kubernetes.io/actions.canary 어노테이션에 선언된 비율 값이 지속적으로 변경되어 여러 번의 커밋이 발생하기 때문입니다. 이 ALB 컨트롤러를 사용한 카나리 배포는 완전히 자동화된 카나리 배포는 아니라는 점을 명심해야 합니다.
+만약 ArgoCD를 사용해서 GitOps 방식으로 Ingress (ALB) 리소스의 설정을 관리하고 있다면, 카나리 작업 브랜치를 별도로 분리하는 것을 권장합니다. 왜냐하면 이 방식은 Ingress 리소스의 어노테이션에 선언된 비율 값을 변경하는 것이기 때문에, 이 값을 변경하는 과정에서 alb.ingress.kubernetes.io/actions.canary 어노테이션에 선언된 비율 값이 지속적으로 변경되어 여러 번의 커밋이 발생하기 때문입니다.
+
+```mermaid
+---
+title: Git commit history for canary deployment
+---
+%%{init: { 'loglevel': 'debug', 'theme': 'dark' } }%%
+gitGraph
+   commit
+   commit
+   branch deploy/canary-app
+   checkout deploy/canary-app
+   commit id: "canary 5%"
+   commit id: "canary 10%"
+   commit id: "canary 25%"
+   commit id: "canary 50%"
+   commit id: "canary 100%"
+   checkout main
+   merge deploy/canary-app
+   commit
+```
+
+이 ALB 컨트롤러를 사용한 카나리 배포는 완전히 자동화된 카나리 배포는 아니라는 점을 명심해야 합니다.
 
 &nbsp;
 
