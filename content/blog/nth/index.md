@@ -1,7 +1,7 @@
 ---
 title: "NTH"
 date: 2023-06-11T22:29:40+09:00
-lastmod: 2024-11-14T20:30:45+09:00
+lastmod: 2025-05-22T09:56:00+09:00
 slug: ""
 description: "Node Termination Handler를 사용해서 EKS 스팟 워커노드 안전하게 운영하는 방법을 소개합니다. NTH의 원리, 개념, 설치방법 등을 다룹니다."
 keywords: []
@@ -56,23 +56,23 @@ NTH는 스팟 인스턴스 인터럽션 안내 이벤트(Spot ITN)를 감지한 
 title: Node Termination Handler in IMDS(Instance Metadata Service) mode
 ---
 flowchart LR
-    AWS[EC2 Service] --> |Spot ITN 발생| IMDS
+    AWS[EC2 Service] --> |1 Spot ITN 발생| IMDS
     
-    NTH --> |Watch Spot ITN event from IMDS| IMDS
-    NTH <--> |Cordon + Eviction API| API[Kubernetes API 서버]
-    API --> |Cordon| Node[노드 리소스]
+    NTH --> |2 Watch Spot ITN event from IMDS| IMDS
+    NTH <--> |3 Cordon + Eviction API| API[Kubernetes API 서버]
+    API --> |4 Cordon| Node[노드 리소스]
     
-    API <--> |Verify PDB compliance| PDB["PDB<br>(Pod Disruption Budget)"]
-    API --> |Send Eviction API| Kubelet[Kubelet]
-    Kubelet --> |Send **SIGTERM** signal| Pod["Pod(s)"]
+    API <--> |5 Verify PDB compliance| PDB["PDB<br>(Pod Disruption Budget)"]
+    kubelet[kubelet] --> |6 Watch pod deletion command| API
+    kubelet --> |7 Send **SIGTERM** signal| Pod["Pod(s)"]
     
-    Pod -.-> Shutdown(Graceful Shutdown)
+    Pod -.-> |8 Graceful Shutdown| Shutdown(Graceful Shutdown)
    
     subgraph Cluster["⎈ Kubernetes Cluster"]
       subgraph Node["Worker Node (Spot EC2)"]
         IMDS
         NTH
-        Kubelet
+        kubelet
         Pod
       end
         API
@@ -85,7 +85,7 @@ flowchart LR
     classDef shutdown fill:#D3455B,stroke:#fff,color:white;
     
     class AWS,IMDS aws;
-    class API,PDB,Pod,NTH,Kubelet k8s;
+    class API,PDB,Pod,NTH k8s;
     class Shutdown shutdown;
 ```
 
