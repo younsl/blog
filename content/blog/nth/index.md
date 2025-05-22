@@ -47,7 +47,47 @@ EKS 환경에서 스팟 인스턴스 인터럽션을 처리할 때 필요한 대
 
 ![NTH 동작 순서](./2.png)
 
-NTH는 스팟 인스턴스 인터럽션 안내 이벤트를 감지한 후 자동으로 해당 스팟 노드를 스케줄링 제외한 후, 올라가있는 노드를 다른 노드로 재배치(drain)합니다.
+NTH는 스팟 인스턴스 인터럽션 안내 이벤트(Spot ITN)를 감지한 후, 파드를 축출(Evict)하고 종료 예정인 스팟 노드를 스케줄링 제외(Cordon)합니다. [쿠버네티스의 Eviction API](https://kubernetes.io/docs/concepts/scheduling-eviction/api-eviction/)는 PDB와 terminationGracePeriodSeconds 설정을 보장하므로 파드의 우아한 종료도 보장합니다.
+
+다음은 NTH가 IMDS 모드로 동작할 때의 동작 순서를 나타낸 다이어그램입니다.
+
+```mermaid
+---
+title: Node Termination Handler in IMDS(Instance Metadata Service) mode
+---
+flowchart LR
+    AWS[EC2 Service] --> |Spot ITN 발생| IMDS
+    
+    NTH --> |Watch Spot ITN event from IMDS| IMDS
+    NTH <--> |Cordon + Eviction API| API[Kubernetes API 서버]
+    API --> |Cordon| Node[노드 리소스]
+    
+    API <--> |Verify PDB compliance| PDB["PDB<br>(Pod Disruption Budget)"]
+    API --> |Send Eviction API| Kubelet[Kubelet]
+    Kubelet --> |Send **SIGTERM** signal| Pod["Pod(s)"]
+    
+    Pod -.-> Shutdown(Graceful Shutdown)
+   
+    subgraph Cluster["⎈ Kubernetes Cluster"]
+      subgraph Node["Worker Node (Spot EC2)"]
+        IMDS
+        NTH
+        Kubelet
+        Pod
+      end
+        API
+        PDB
+        Shutdown
+    end
+    
+    classDef aws fill:#FF9900,stroke:#232F3E,color:white;
+    classDef k8s fill:#326CE5,stroke:#fff,color:white;
+    classDef shutdown fill:#D3455B,stroke:#fff,color:white;
+    
+    class AWS,IMDS aws;
+    class API,PDB,Pod,NTH,Kubelet k8s;
+    class Shutdown shutdown;
+```
 
 &nbsp;
 
