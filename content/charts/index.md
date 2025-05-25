@@ -41,14 +41,15 @@ The `index.yaml` file contains the metadata of the repository and is used for ch
 
 ## Available charts
 
-| Chart name | Status | Chart version |
-| ---------- | ------ | ------------- |
-| [**actions-runner**][actions-runner] | Active | 0.1.4 |
-| [**argocd-apps**][argocd-apps] | Active | 1.7.0 |
-| [**backup-utils**][backup-utils] | Active | 0.4.2 |
-| [**karpenter-nodepool**][karpenter-nodepool] | Active | 1.3.0 |
-| [**rbac**][rbac] | Active | 0.2.1 |
-| [**kube-green-sleepinfos**][kube-green-sleepinfos] | Active | 0.1.0 |
+| Chart name | Status | Chart version | App version |
+| ---------- | ------ | ------------- | ----------- |
+| [**actions-runner**][actions-runner] | Active | 0.1.4 | N/A |
+| [**argocd-apps**][argocd-apps] | Active | 1.7.0 | N/A |
+| [**backup-utils**][backup-utils] | Active | 0.4.2 | 3.15.1 |
+| [**karpenter-nodepool**][karpenter-nodepool] | Active | 1.3.0 | N/A |
+| [**rbac**][rbac] | Active | 0.2.1 | N/A |
+| [**kube-green-sleepinfos**][kube-green-sleepinfos] | Active | 0.1.0 | N/A |
+| [**squid**][squid] | Active | 0.1.0 | 6.10-24.10_beta |
 
 [actions-runner]: https://github.com/younsl/blog/tree/main/content/charts/actions-runner
 [argocd-apps]: https://github.com/younsl/blog/tree/main/content/charts/argocd-apps
@@ -56,3 +57,4 @@ The `index.yaml` file contains the metadata of the repository and is used for ch
 [karpenter-nodepool]: https://github.com/younsl/blog/tree/main/content/charts/karpenter-nodepool
 [rbac]: https://github.com/younsl/blog/tree/main/content/charts/rbac
 [kube-green-sleepinfos]: https://github.com/younsl/blog/tree/main/content/charts/kube-green-sleepinfos
+[squid]: https://github.com/younsl/blog/tree/main/content/charts/squid
