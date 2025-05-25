@@ -140,7 +140,7 @@ config:
 
   # Squid configuration file content
   # This configuration will be mounted to /etc/squid/squid.conf inside the squid container
-  # See: https://www.squid-cache.org/Versions/v5/cfgman/
+  # See: https://www.squid-cache.org/Versions/v6/cfgman/
   squid.conf: |
     ## Squid normally listens to port {{ .Values.service.targetPort | default 3128 }}
     http_port {{ .Values.service.targetPort | default 3128 }}
