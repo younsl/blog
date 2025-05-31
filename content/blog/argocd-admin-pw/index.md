@@ -31,18 +31,32 @@ tags: ["kubernetes", "argocd"]
 ArgoCD 서버(arogcd-server) 파드는 기본적으로 [Kubernetes API를 통해 Secret에 저장된 admin password를 참조](https://github.com/argoproj/argo-cd/blob/master/util/settings/accounts.go)하도록 동작합니다.
 
 ```mermaid
+---
+title: "ArgoCD Admin Password Reset"
+---
+
 graph LR
-  A["Cluster Admin"]
+  A("Cluster Administrator")
 
   subgraph "Kubernetes Cluster"
-    S["Secret"]
-    as["**Pod** argocd-server"]
+    direction LR
+    subgraph "argocd"
+      S["`**Secret**
+      argocd-secret`"]
+      as["`**Pod**
+      argocd-server`"]
+    end
   end
 
-  A --> S
+  A --Update admin password using ArgoCD CLI--> S
   as --Retrieve admin password via Kubernetes API--> S
 
-  style S fill:darkorange,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+  note[ArgoCD Server version is 2.9.5, installed by official helm chart]
+
+  note ~~~ S
+
+  style S fill:darkorange,color:white,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+  style note fill:transparent,color:#fff,stroke:#333
 ```
 
 따라서 이 비밀번호를 변경하려면 먼저 Kubernetes API를 통해 Secret에 저장된 비밀번호를 변경해야 합니다.
