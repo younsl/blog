@@ -15,7 +15,7 @@ DevOps Engineer and [Gopher](https://go.dev/blog/gopher). Big fan of [Kubernetes
 
 ### Links
 
-[Github](https://github.com/younsl), [Resume](/about/assets/resume-short.pdf), [Charts](/charts/), [Containerelic](https://github.com/containerelic)
+[Github](https://github.com/younsl), [Resume](/about/assets/resume-short.pdf), [Charts](/charts/)
 
 ### Slides
 
@@ -29,3 +29,4 @@ Slides I've created and presented on Site Reliability Engineering, Kubernetes, a
 - [EKS Security Enhancements](/slides/eks-security-enhancement.pdf)
 - [Actions Runner Controller Scaling](/slides/arc-scale-zero.pdf)
 - [Infrastructure for Sales](/slides/infrastructure-for-sales.pdf)
+- [Karpenter Nodepool Strategy](/slides/karpenter-nodepool-strategy.pdf)
