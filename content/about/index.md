@@ -19,7 +19,7 @@ DevOps Engineer and [Gopher](https://go.dev/blog/gopher). Big fan of [Kubernetes
 
 ### Slides
 
-Slides I've created and presented on Site Reliability Engineering, Kubernetes, and Cloud Native technologies using [marp](https://marp.app/).
+Slides I've created and presented on Site Reliability Engineering, Kubernetes, and Cloud Native technologies.
 
 - [Loki zstd](/slides/loki-zstd.pdf)
 - [Kubernetes native admission policy](/slides/admission-policy.pdf)
