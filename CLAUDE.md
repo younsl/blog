@@ -109,3 +109,17 @@ cd content/charts
 - Slides directory `.md` files ignored during Hugo build
 - Slide assets filtered from Hugo processing
 - Clear separation between blog content and presentation content
+
+## Important Development Guidelines
+
+### File Management
+- ALWAYS prefer editing existing files over creating new ones
+- NEVER create documentation files (*.md) or README files unless explicitly requested
+- When working with Helm charts, use the existing `cr.sh` script for packaging and releasing
+
+### Chart Release Process
+The `cr.sh` script in `content/charts/` automates the complete chart release workflow:
+1. Validates chart with `helm lint`
+2. Packages chart to `.tgz` file
+3. Updates repository index
+4. Synchronizes index between `content/charts/` and `static/` directories
